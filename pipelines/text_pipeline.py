@@ -6,9 +6,16 @@ from pipelines.base_pipeline import PipelineConfig, Pipeline
 
 @dataclass
 class TextConfig(PipelineConfig):
+    """Configuration class for text pipeline"""
+
     chunk_overlap: int = 0
+    """Number of overlapping tokens between chunks"""
+
     tokenizer: Optional[Any] = None
+    """Tokenizer object to use for tokenization"""
+
     max_sequence_length: int = 512
+    """Maximum sequence length for tokenization"""
 
 
 class TextPipeline(Pipeline):

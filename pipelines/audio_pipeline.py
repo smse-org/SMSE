@@ -13,7 +13,6 @@ class AudioConfig(PipelineConfig):
     normalize_audio: bool = True
 
 
-# Audio Pipeline
 class AudioPipeline(Pipeline):
     def __init__(self, config: AudioConfig):
         super().__init__(config)
