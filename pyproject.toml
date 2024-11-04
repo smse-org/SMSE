@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "smse"
+version = "0.1.0"
+description = "A search engine that works across multiple modalities using semantic embeddings"
+authors = ["Ahmedsaed <ahmedsaed2652003@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^2.1.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
