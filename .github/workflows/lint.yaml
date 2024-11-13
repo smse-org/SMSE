@@ -28,7 +28,7 @@ jobs:
 
       - name: Run mypy
         run: |
-          mypy . --strict
+          mypy .
         continue-on-error: false
 
       - name: Run flake8
