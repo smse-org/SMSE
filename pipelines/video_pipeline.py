@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from typing import Union, Dict, Any
 from pathlib import Path
+from typing import Any, Dict, Union
+
 import numpy as np
-from pipelines.base_pipeline import PipelineConfig, DataType, Pipeline
-from pipelines.image_pipeline import ImageConfig, ImagePipeline
+
 from pipelines.audio_pipeline import AudioConfig, AudioPipeline
+from pipelines.base_pipeline import DataType, Pipeline, PipelineConfig
+from pipelines.image_pipeline import ImageConfig, ImagePipeline
 
 
 @dataclass
@@ -26,10 +28,10 @@ class VideoPipeline(Pipeline):
     def load(self, input_path: Union[str, Path]) -> Dict[str, Any]:
         """Load video from file"""
         try:
-            import cv2
+            import cv2  # type: ignore[import-not-found]
 
             cap = cv2.VideoCapture(str(input_path))
-            frames = []
+            frames: list = []
             while len(frames) < self.config.max_frames:
                 ret, frame = cap.read()
                 if not ret:
@@ -47,7 +49,7 @@ class VideoPipeline(Pipeline):
     def validate(self, data: Any) -> bool:
         return isinstance(data, dict) and "frames" in data
 
-    def preprocess(self, video_data: Dict[str, Any]) -> Dict[str, np.ndarray]:
+    def preprocess(self, video_data: Dict[str, Any]) -> Dict[str, np.ndarray | None]:
         """Preprocess video data"""
         frames = video_data["frames"]
 

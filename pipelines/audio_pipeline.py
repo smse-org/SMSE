@@ -1,8 +1,10 @@
 from dataclasses import dataclass
-from typing import Union, Any
 from pathlib import Path
-from pipelines.base_pipeline import PipelineConfig, Pipeline
+from typing import Any, Union
+
 import numpy as np
+
+from pipelines.base_pipeline import Pipeline, PipelineConfig
 
 
 @dataclass
@@ -21,7 +23,7 @@ class AudioPipeline(Pipeline):
     def load(self, input_path: Union[str, Path]) -> tuple:
         """Load audio from file"""
         try:
-            import librosa
+            import librosa  # type: ignore[import-not-found]
 
             audio, sr = librosa.load(
                 input_path,

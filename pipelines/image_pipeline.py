@@ -1,8 +1,10 @@
 from dataclasses import dataclass
-from typing import Union, Any
 from pathlib import Path
+from typing import Any, Union
+
 import numpy as np
-from pipelines.base_pipeline import PipelineConfig, Pipeline
+
+from pipelines.base_pipeline import Pipeline, PipelineConfig
 
 
 @dataclass
@@ -23,7 +25,7 @@ class ImagePipeline(Pipeline):
     def load(self, input_path: Union[str, Path]) -> np.ndarray:
         """Load image from file"""
         try:
-            import cv2
+            import cv2  # type: ignore[import-not-found]
 
             return cv2.imread(str(input_path))
         except ImportError:

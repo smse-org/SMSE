@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Optional, Union, List, Any
 from pathlib import Path
-from pipelines.base_pipeline import PipelineConfig, Pipeline
+from typing import Any, List, Optional, Union
+
+from pipelines.base_pipeline import Pipeline, PipelineConfig
 
 
 @dataclass
@@ -40,7 +41,7 @@ class TextPipeline(Pipeline):
         # Simple chunking strategy - can be extended with more sophisticated approaches
         words = text.split()
         chunks = []
-        current_chunk = []
+        current_chunk: List[str] = []
         current_length = 0
 
         for word in words:

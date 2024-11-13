@@ -15,10 +15,19 @@ optional = true
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.13.0"
-flake8 = "^7.1.1"
 black = "^24.10.0"
 isort = "^5.13.2"
+flake8 = "7.0.0"
+pyproject-flake8 = "7.0.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+extend-exclude = "third-party"
+line-length = 88
+
+[tool.isort]
+extend_skip = "third-party"
+profile = "black"
