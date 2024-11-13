@@ -1,18 +1,19 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Union, List
+from typing import Any, List, Union
 
 import numpy as np
-from numpy.typing import NDArray
 
 from pipelines.audio_pipeline import AudioConfig, AudioPipeline, AudioT
 from pipelines.base_pipeline import DataType, Pipeline, PipelineConfig
 from pipelines.image_pipeline import ImageConfig, ImagePipeline, ImageT
 
+
 @dataclass
 class VideoT:
     frames: ImageT | List[ImageT]
     audio: AudioT
+
 
 @dataclass
 class VideoConfig(PipelineConfig):

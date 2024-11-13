@@ -7,10 +7,12 @@ from numpy.typing import NDArray
 
 from pipelines.base_pipeline import Pipeline, PipelineConfig
 
+
 @dataclass
-class AudioT():
+class AudioT:
     audio: NDArray[np.float32]
     sample_rate: int
+
 
 @dataclass
 class AudioConfig(PipelineConfig):
@@ -49,7 +51,7 @@ class AudioPipeline(Pipeline):
 
         if self.config.normalize_audio:
             try:
-                import librosa # type: ignore[import-not-found]
+                import librosa  # type: ignore[import-not-found]
 
                 audio = librosa.util.normalize(audio)
             except ImportError:

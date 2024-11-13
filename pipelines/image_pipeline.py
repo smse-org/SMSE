@@ -9,6 +9,7 @@ from pipelines.base_pipeline import Pipeline, PipelineConfig
 
 ImageT = NDArray[np.float64 | np.uint8]
 
+
 @dataclass
 class ImageConfig(PipelineConfig):
     target_size: tuple[int, int] = (224, 224)
@@ -34,7 +35,7 @@ class ImagePipeline(Pipeline):
             return image
         except ImportError:
             self.logger.warning("OpenCV not found, trying PIL")
-            from PIL import Image # type: ignore[import-not-found]
+            from PIL import Image  # type: ignore[import-not-found]
 
             return np.array(Image.open(str(input_path)))
 
@@ -43,7 +44,7 @@ class ImagePipeline(Pipeline):
 
     def preprocess(self, image: ImageT) -> ImageT:
         """Preprocess image data"""
-        import cv2 # type: ignore[import-not-found]
+        import cv2  # type: ignore[import-not-found]
 
         # Resize
         image = cv2.resize(image, self.config.target_size)
