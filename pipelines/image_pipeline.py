@@ -3,17 +3,19 @@ from pathlib import Path
 from typing import Any, Union
 
 import numpy as np
+from numpy.typing import NDArray
 
 from pipelines.base_pipeline import Pipeline, PipelineConfig
 
+ImageT = NDArray[np.float64 | np.uint8]
 
 @dataclass
 class ImageConfig(PipelineConfig):
-    target_size: tuple = (224, 224)
+    target_size: tuple[int, int] = (224, 224)
     channels: int = 3
     normalize: bool = True
-    mean: tuple = (0.485, 0.456, 0.406)
-    std: tuple = (0.229, 0.224, 0.225)
+    mean: tuple[float, float, float] = (0.485, 0.456, 0.406)
+    std: tuple[float, float, float] = (0.229, 0.224, 0.225)
 
 
 # Image Pipeline
@@ -22,12 +24,14 @@ class ImagePipeline(Pipeline):
         super().__init__(config)
         self.config: ImageConfig = config
 
-    def load(self, input_path: Union[str, Path]) -> np.ndarray:
+    def load(self, input_path: Union[str, Path]) -> ImageT:
         """Load image from file"""
         try:
             import cv2  # type: ignore[import-not-found]
 
-            return cv2.imread(str(input_path))
+            image: ImageT = cv2.imread(str(input_path))
+
+            return image
         except ImportError:
             self.logger.warning("OpenCV not found, trying PIL")
             from PIL import Image # type: ignore[import-not-found]
@@ -37,7 +41,7 @@ class ImagePipeline(Pipeline):
     def validate(self, data: Any) -> bool:
         return isinstance(data, np.ndarray) and len(data.shape) in [2, 3]
 
-    def preprocess(self, image: np.ndarray) -> np.ndarray:
+    def preprocess(self, image: ImageT) -> ImageT:
         """Preprocess image data"""
         import cv2 # type: ignore[import-not-found]
 
