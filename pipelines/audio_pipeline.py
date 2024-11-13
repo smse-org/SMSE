@@ -44,7 +44,7 @@ class AudioPipeline(Pipeline):
 
         if self.config.normalize_audio:
             try:
-                import librosa
+                import librosa # type: ignore[import-not-found]
 
                 audio = librosa.util.normalize(audio)
             except ImportError:

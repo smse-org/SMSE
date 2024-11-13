@@ -30,7 +30,7 @@ class ImagePipeline(Pipeline):
             return cv2.imread(str(input_path))
         except ImportError:
             self.logger.warning("OpenCV not found, trying PIL")
-            from PIL import Image
+            from PIL import Image # type: ignore[import-not-found]
 
             return np.array(Image.open(str(input_path)))
 
@@ -39,7 +39,7 @@ class ImagePipeline(Pipeline):
 
     def preprocess(self, image: np.ndarray) -> np.ndarray:
         """Preprocess image data"""
-        import cv2
+        import cv2 # type: ignore[import-not-found]
 
         # Resize
         image = cv2.resize(image, self.config.target_size)
