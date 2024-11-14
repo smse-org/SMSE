@@ -1,8 +1,17 @@
 from dataclasses import dataclass
-from typing import Union, Any
 from pathlib import Path
-from pipelines.base_pipeline import PipelineConfig, Pipeline
+from typing import Any, Union
+
 import numpy as np
+from numpy.typing import NDArray
+
+from smse.pipelines.base_pipeline import Pipeline, PipelineConfig
+
+
+@dataclass
+class AudioT:
+    audio: NDArray[np.float32]
+    sample_rate: int
 
 
 @dataclass
@@ -18,10 +27,10 @@ class AudioPipeline(Pipeline):
         super().__init__(config)
         self.config: AudioConfig = config
 
-    def load(self, input_path: Union[str, Path]) -> tuple:
+    def load(self, input_path: Union[str, Path]) -> AudioT:
         """Load audio from file"""
         try:
-            import librosa
+            import librosa  # type: ignore[import-not-found]
 
             audio, sr = librosa.load(
                 input_path,
@@ -29,20 +38,20 @@ class AudioPipeline(Pipeline):
                 mono=self.config.mono,
                 duration=self.config.max_duration,
             )
-            return audio, sr
+            return AudioT(audio=audio, sample_rate=sr)
         except ImportError:
             raise ImportError("librosa is required for audio processing")
 
     def validate(self, data: Any) -> bool:
-        return isinstance(data, tuple) and len(data) == 2
+        return isinstance(data, AudioT)
 
-    def preprocess(self, audio_data: tuple) -> np.ndarray:
+    def preprocess(self, audio_data: AudioT) -> AudioT:
         """Preprocess audio data"""
-        audio, sr = audio_data
+        audio, sr = audio_data.audio, audio_data.sample_rate
 
         if self.config.normalize_audio:
             try:
-                import librosa
+                import librosa  # type: ignore[import-not-found]
 
                 audio = librosa.util.normalize(audio)
             except ImportError:
@@ -55,4 +64,4 @@ class AudioPipeline(Pipeline):
         elif len(audio) < target_length:
             audio = np.pad(audio, (0, target_length - len(audio)))
 
-        return audio
+        return AudioT(audio=audio, sample_rate=sr)

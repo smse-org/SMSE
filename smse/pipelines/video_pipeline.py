@@ -1,10 +1,18 @@
 from dataclasses import dataclass
-from typing import Union, Dict, Any
 from pathlib import Path
+from typing import Any, List, Union
+
 import numpy as np
-from pipelines.base_pipeline import PipelineConfig, DataType, Pipeline
-from pipelines.image_pipeline import ImageConfig, ImagePipeline
-from pipelines.audio_pipeline import AudioConfig, AudioPipeline
+
+from smse.pipelines.audio_pipeline import AudioConfig, AudioPipeline, AudioT
+from smse.pipelines.base_pipeline import DataType, Pipeline, PipelineConfig
+from smse.pipelines.image_pipeline import ImageConfig, ImagePipeline, ImageT
+
+
+@dataclass
+class VideoT:
+    frames: ImageT | List[ImageT]
+    audio: AudioT
 
 
 @dataclass
@@ -23,13 +31,13 @@ class VideoPipeline(Pipeline):
         self.image_pipeline = ImagePipeline(config.image_config)
         self.audio_pipeline = AudioPipeline(config.audio_config)
 
-    def load(self, input_path: Union[str, Path]) -> Dict[str, Any]:
+    def load(self, input_path: Union[str, Path]) -> VideoT:
         """Load video from file"""
         try:
-            import cv2
+            import cv2  # type: ignore[import-not-found]
 
             cap = cv2.VideoCapture(str(input_path))
-            frames = []
+            frames: List[ImageT] = []
             while len(frames) < self.config.max_frames:
                 ret, frame = cap.read()
                 if not ret:
@@ -40,16 +48,16 @@ class VideoPipeline(Pipeline):
             # Load audio using AudioPipeline
             audio_data = self.audio_pipeline.load(input_path)
 
-            return {"frames": frames, "audio": audio_data}
+            return VideoT(frames=frames, audio=audio_data)
         except ImportError:
             raise ImportError("OpenCV is required for video processing")
 
     def validate(self, data: Any) -> bool:
-        return isinstance(data, dict) and "frames" in data
+        return isinstance(data, VideoT)
 
-    def preprocess(self, video_data: Dict[str, Any]) -> Dict[str, np.ndarray]:
+    def preprocess(self, video_data: VideoT) -> VideoT:
         """Preprocess video data"""
-        frames = video_data["frames"]
+        frames = video_data.frames
 
         # Sample frames if needed
         if len(frames) > self.config.max_frames:
@@ -63,7 +71,7 @@ class VideoPipeline(Pipeline):
 
         # Process audio if available
         processed_audio = None
-        if "audio" in video_data and video_data["audio"] is not None:
-            processed_audio = self.audio_pipeline.preprocess(video_data["audio"])
+        if video_data.audio is not None:
+            processed_audio = self.audio_pipeline.preprocess(video_data.audio)
 
-        return {"frames": processed_frames, "audio": processed_audio}
+        return VideoT(frames=processed_frames, audio=processed_audio)
