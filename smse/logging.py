@@ -31,6 +31,7 @@ LOG_RECORD_BUILTIN_ATTRS = {
 }
 
 LOG_DIR = os.getenv("LOG_DIR", ".logs")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "WARNING")
 
 
 class MyJSONFormatter(logging.Formatter):
@@ -100,27 +101,27 @@ LOGGING_CONFIG = {
         },
     },
     "handlers": {
-        "stderr": {
+        "stdout": {
             "class": "logging.StreamHandler",
-            "level": "WARNING",
+            "level": LOG_LEVEL,
             "formatter": "simple",
-            "stream": "ext://sys.stderr",
+            "stream": "ext://sys.stdout",
         },
         "file_json": {
             "class": "logging.handlers.RotatingFileHandler",
             "level": "DEBUG",
             "formatter": "json",
             "filename": f"{LOG_DIR}/smse.log.jsonl",
-            "maxBytes": 10000,
+            "maxBytes": 1024 * 1024 * 10,  # 10 MB
             "backupCount": 3,
         },
         # "queue_handler": {
         #     "class": "logging.handlers.QueueHandler",
-        #     "handlers": ["stderr", "file_json"],
+        #     "handlers": ["stdout", "file_json"],
         #     "respect_handler_level": True,
         # },
     },
-    "loggers": {"root": {"level": "DEBUG", "handlers": ["stderr", "file_json"]}},
+    "loggers": {"root": {"level": "DEBUG", "handlers": ["stdout", "file_json"]}},
 }
 
 
