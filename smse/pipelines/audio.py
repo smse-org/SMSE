@@ -5,7 +5,7 @@ from typing import Any, Union
 import numpy as np
 from numpy.typing import NDArray
 
-from smse.pipelines.base_pipeline import Pipeline, PipelineConfig
+from smse.pipelines.base import Pipeline, PipelineConfig
 
 
 @dataclass
