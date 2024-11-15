@@ -1,12 +1,12 @@
 from pathlib import Path
 from typing import Any, Dict, Union
 
-from smse.pipelines.base_pipeline import DataType, Pipeline
+from smse.pipelines.base import BasePipeline, DataType
 
 
 # Multimodal Pipeline
 class MultimodalPipeline:
-    def __init__(self, pipelines: Dict[DataType, Pipeline]):
+    def __init__(self, pipelines: Dict[DataType, BasePipeline]):
         self.pipelines = pipelines
 
     def process(

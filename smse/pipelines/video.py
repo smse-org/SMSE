@@ -4,9 +4,9 @@ from typing import Any, List, Union
 
 import numpy as np
 
-from smse.pipelines.audio_pipeline import AudioConfig, AudioPipeline, AudioT
-from smse.pipelines.base_pipeline import DataType, Pipeline, PipelineConfig
-from smse.pipelines.image_pipeline import ImageConfig, ImagePipeline, ImageT
+from smse.pipelines.audio import AudioConfig, AudioPipeline, AudioT
+from smse.pipelines.base import BasePipeline, DataType, PipelineConfig
+from smse.pipelines.image import ImageConfig, ImagePipeline, ImageT
 
 
 @dataclass
@@ -24,7 +24,7 @@ class VideoConfig(PipelineConfig):
 
 
 # Video Pipeline
-class VideoPipeline(Pipeline):
+class VideoPipeline(BasePipeline):
     def __init__(self, config: VideoConfig):
         super().__init__(config)
         self.config: VideoConfig = config

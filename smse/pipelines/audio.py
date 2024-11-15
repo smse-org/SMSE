@@ -5,7 +5,7 @@ from typing import Any, Union
 import numpy as np
 from numpy.typing import NDArray
 
-from smse.pipelines.base_pipeline import Pipeline, PipelineConfig
+from smse.pipelines.base import BasePipeline, PipelineConfig
 
 
 @dataclass
@@ -22,7 +22,7 @@ class AudioConfig(PipelineConfig):
     normalize_audio: bool = True
 
 
-class AudioPipeline(Pipeline):
+class AudioPipeline(BasePipeline):
     def __init__(self, config: AudioConfig):
         super().__init__(config)
         self.config: AudioConfig = config

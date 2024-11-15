@@ -5,7 +5,7 @@ from typing import Any, Union
 import numpy as np
 from numpy.typing import NDArray
 
-from smse.pipelines.base_pipeline import Pipeline, PipelineConfig
+from smse.pipelines.base import BasePipeline, PipelineConfig
 
 ImageT = NDArray[np.float64 | np.uint8]
 
@@ -20,7 +20,7 @@ class ImageConfig(PipelineConfig):
 
 
 # Image Pipeline
-class ImagePipeline(Pipeline):
+class ImagePipeline(BasePipeline):
     def __init__(self, config: ImageConfig):
         super().__init__(config)
         self.config: ImageConfig = config

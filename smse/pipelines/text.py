@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Union
 
-from smse.pipelines.base_pipeline import Pipeline, PipelineConfig
+from smse.pipelines.base import BasePipeline, PipelineConfig
 
 
 @dataclass
@@ -19,7 +19,7 @@ class TextConfig(PipelineConfig):
     """Maximum sequence length for tokenization"""
 
 
-class TextPipeline(Pipeline):
+class TextPipeline(BasePipeline):
     def __init__(self, config: TextConfig):
         super().__init__(config)
         self.config: TextConfig = config
