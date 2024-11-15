@@ -83,7 +83,7 @@ LOGGING_CONFIG = {
     "disable_existing_loggers": False,
     "formatters": {
         "simple": {
-            "format": "[%(asctime)s] [%(levelname)8s]  -  %(message)s (%(filename)s:%(lineno)s)",  # noqa: E501
+            "format": "[%(asctime)s] [%(levelname)8s] -  %(message)s (%(name)s:%(filename)s:%(lineno)s)",  # noqa: E501
             "datefmt": "%Y-%m-%dT%H:%M:%S%z",
         },
         "json": {
