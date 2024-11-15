@@ -4,9 +4,9 @@ from typing import Any, List, Union
 
 import numpy as np
 
-from pipelines.audio_pipeline import AudioConfig, AudioPipeline, AudioT
-from pipelines.base_pipeline import DataType, Pipeline, PipelineConfig
-from pipelines.image_pipeline import ImageConfig, ImagePipeline, ImageT
+from smse.pipelines.audio_pipeline import AudioConfig, AudioPipeline, AudioT
+from smse.pipelines.base_pipeline import DataType, Pipeline, PipelineConfig
+from smse.pipelines.image_pipeline import ImageConfig, ImagePipeline, ImageT
 
 
 @dataclass

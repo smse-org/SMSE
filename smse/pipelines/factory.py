@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, Union
 
-from pipelines.base_pipeline import DataType, Pipeline
+from smse.pipelines.base_pipeline import DataType, Pipeline
 
 
 # Multimodal Pipeline

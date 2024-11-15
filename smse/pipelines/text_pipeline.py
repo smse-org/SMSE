@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Union
 
-from pipelines.base_pipeline import Pipeline, PipelineConfig
+from smse.pipelines.base_pipeline import Pipeline, PipelineConfig
 
 
 @dataclass
