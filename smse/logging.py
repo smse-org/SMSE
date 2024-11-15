@@ -3,7 +3,6 @@ import logging.config
 import atexit
 import datetime as dt
 import json
-from typing import override
 
 LOG_RECORD_BUILTIN_ATTRS = {
     "args",
@@ -41,7 +40,6 @@ class MyJSONFormatter(logging.Formatter):
         super().__init__()
         self.fmt_keys = fmt_keys if fmt_keys is not None else {}
 
-    @override
     def format(self, record: logging.LogRecord) -> str:
         message = self._prepare_log_dict(record)
         return json.dumps(message, default=str)
@@ -82,11 +80,11 @@ LOGGING_CONFIG = {
     "disable_existing_loggers": False,
     "formatters": {
         "simple": {
-            "format": "[%(levelname)s|%(module)s|L%(lineno)d]\t %(asctime)s: %(message)s",
+            "format": "[%(asctime)s] [%(levelname)8s]  -  %(message)s (%(filename)s:%(lineno)s)",
             "datefmt": "%Y-%m-%dT%H:%M:%S%z",
         },
         "json": {
-            "()": "smse.logger.MyJSONFormatter",
+            "()": "smse.logging.MyJSONFormatter",
             "fmt_keys": {
                 "level": "levelname",
                 "message": "message",
@@ -114,22 +112,22 @@ LOGGING_CONFIG = {
             "maxBytes": 10000,
             "backupCount": 3,
         },
-        "queue_handler": {
-            "class": "logging.handlers.QueueHandler",
-            "handlers": ["stderr", "file_json"],
-            "respect_handler_level": True,
-        },
+        # "queue_handler": {
+        #     "class": "logging.handlers.QueueHandler",
+        #     "handlers": ["stderr", "file_json"],
+        #     "respect_handler_level": True,
+        # },
     },
-    "loggers": {"root": {"level": "DEBUG", "handlers": ["queue_handler"]}},
+    "loggers": {"root": {"level": "DEBUG", "handlers": ["stderr", "file_json"]}},
 }
 
 
 def setup_logging():
     logging.config.dictConfig(LOGGING_CONFIG)
-    queue_handler = logging.getHandlerByName("queue_handler")
-    if queue_handler is not None:
-        queue_handler.listener.start()
-        atexit.register(queue_handler.listener.stop)
+    # queue_handler = logging.getHandlerByName("queue_handler")
+    # if queue_handler is not None:
+    #     queue_handler.listener.start()
+    #     atexit.register(queue_handler.listener.stop)
 
 
 def get_logger(name: str) -> logging.Logger:

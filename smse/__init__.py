@@ -1,3 +1,3 @@
-from smse.logger import setup_logging
+from smse.logging import setup_logging
 
 setup_logging()

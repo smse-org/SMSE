@@ -1,4 +1,4 @@
-from smse.logger import get_logger
+from smse.logging import get_logger
 
 logger = get_logger(__name__)
 
