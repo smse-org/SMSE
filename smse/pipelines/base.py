@@ -24,7 +24,7 @@ class PipelineConfig:
     device: str = "cpu"
 
 
-class Pipeline(ABC):
+class BasePipeline(ABC):
     def __init__(self, config: PipelineConfig):
         self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
