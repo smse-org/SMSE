@@ -1,8 +1,8 @@
-import logging
-import logging.config
-import atexit
 import datetime as dt
 import json
+import logging
+import logging.config
+import os
 
 LOG_RECORD_BUILTIN_ATTRS = {
     "args",
@@ -30,6 +30,8 @@ LOG_RECORD_BUILTIN_ATTRS = {
     "taskName",
 }
 
+LOG_DIR = os.getenv("LOG_DIR", ".logs")
+
 
 class MyJSONFormatter(logging.Formatter):
     def __init__(
@@ -44,7 +46,7 @@ class MyJSONFormatter(logging.Formatter):
         message = self._prepare_log_dict(record)
         return json.dumps(message, default=str)
 
-    def _prepare_log_dict(self, record: logging.LogRecord):
+    def _prepare_log_dict(self, record: logging.LogRecord) -> dict[str, str]:
         always_fields = {
             "message": record.getMessage(),
             "timestamp": dt.datetime.fromtimestamp(
@@ -80,7 +82,7 @@ LOGGING_CONFIG = {
     "disable_existing_loggers": False,
     "formatters": {
         "simple": {
-            "format": "[%(asctime)s] [%(levelname)8s]  -  %(message)s (%(filename)s:%(lineno)s)",
+            "format": "[%(asctime)s] [%(levelname)8s]  -  %(message)s (%(filename)s:%(lineno)s)",  # noqa: E501
             "datefmt": "%Y-%m-%dT%H:%M:%S%z",
         },
         "json": {
@@ -108,7 +110,7 @@ LOGGING_CONFIG = {
             "class": "logging.handlers.RotatingFileHandler",
             "level": "DEBUG",
             "formatter": "json",
-            "filename": ".logs/my_app.log.jsonl",
+            "filename": f"{LOG_DIR}/smse.log.jsonl",
             "maxBytes": 10000,
             "backupCount": 3,
         },
@@ -122,8 +124,12 @@ LOGGING_CONFIG = {
 }
 
 
-def setup_logging():
+def setup_logging() -> None:
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
+
     logging.config.dictConfig(LOGGING_CONFIG)
+
     # queue_handler = logging.getHandlerByName("queue_handler")
     # if queue_handler is not None:
     #     queue_handler.listener.start()

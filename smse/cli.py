@@ -3,7 +3,7 @@ from smse.logging import get_logger
 logger = get_logger(__name__)
 
 
-def main():
+def main() -> None:
     logger.info("Hello, World1!")
     logger.debug("Hello, World2!")
     logger.warning("Hello, World3!")
