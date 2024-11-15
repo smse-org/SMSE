@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Union, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -58,7 +58,7 @@ class ImagePipeline(BasePipeline):
         else:
             raise ValueError(f"Unsupported image shape: {image.shape}")
 
-        return converted_image
+        return cast(ImageT, converted_image)
 
     def preprocess(
         self,
