@@ -87,22 +87,14 @@ jobs:
         <!-- Add release notes here -->
         EOF
         
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ steps.get_version.outputs.version }}
-        release_name: Release v${{ steps.get_version.outputs.version }}
-        body_path: release_notes.md
-        draft: true
-        prerelease: false
-        
     - name: Upload Release Assets
       uses: softprops/action-gh-release@v1
       with:
         files: combined-dist/*
         tag_name: v${{ steps.get_version.outputs.version }}
+        name: Release v${{ steps.get_version.outputs.version }}
+        body_path: release_notes.md
+        draft: true
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
