@@ -31,6 +31,17 @@ jobs:
       run: |
         poetry config virtualenvs.create true --local
         poetry config virtualenvs.in-project true --local
+    
+    - name: Get package version
+      id: get_version
+      run: |
+        # Extract version from pyproject.toml or setup.py
+        if [ -f "pyproject.toml" ]; then
+          VERSION=$(grep -m 1 'version = ' pyproject.toml | cut -d '"' -f 2)
+        else
+          VERSION=$(grep -m 1 'version=' setup.py | cut -d '"' -f 2)
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Define a cache for the virtual environment based on the dependencies lock file
       uses: actions/cache@v3
@@ -56,5 +67,5 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: dist-py${{ matrix.python-version }}
+        name: smse-${{ steps.get_version.outputs.version }}-linx-x86_64.whl
         path: dist/*.whl
