@@ -42,8 +42,7 @@ jobs:
         key: venv-${{ hashFiles('poetry.lock') }}
 
     - name: Run tests
-      run: |
-        pytest
+      run: poetry run pytest
         
     - name: Set test status
       if: success()
