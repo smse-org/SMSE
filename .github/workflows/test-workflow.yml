@@ -23,23 +23,23 @@ jobs:
         python-version: ${{ matrix.python-version }}
         
     - name: Setup Poetry
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: 'latest'
+      uses: abatilo/actions-poetry@v2
+      with:
+        poetry-version: 'latest'
 
     - name: Setup a local virtual environment
-        run: |
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
+      run: |
+        poetry config virtualenvs.create true --local
+        poetry config virtualenvs.in-project true --local
 
     - name: Install the project dependencies
-        run: poetry install --with dev
+      run: poetry install --with dev
 
     - name: Define a cache for the virtual environment based on the dependencies lock file
-        uses: actions/cache@v3
-        with:
-          path: ./.venv
-          key: venv-${{ hashFiles('poetry.lock') }}
+      uses: actions/cache@v3
+      with:
+        path: ./.venv
+        key: venv-${{ hashFiles('poetry.lock') }}
 
     - name: Run tests
       run: |
