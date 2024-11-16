@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'doc/**'
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+jobs:
+  test:
+    name: Run Tests
+    uses: ./.github/workflows/test-workflow.yml
+    with:
+      py: ['3.10', '3.11', '3.12', '3.13']

@@ -6,8 +6,12 @@ on:
     types:
       - completed
 
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
 jobs:
   release:
+    permissions: write-all
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
