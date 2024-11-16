@@ -13,5 +13,9 @@ jobs:
   test:
     name: Run Tests
     uses: ./.github/workflows/test-workflow.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        py: ['3.10', '3.11', '3.12', '3.13']
     with:
-      py: ['3.10', '3.11', '3.12', '3.13']
+      py: ${{ matrix.py }}
