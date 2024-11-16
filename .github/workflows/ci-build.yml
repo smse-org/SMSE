@@ -16,6 +16,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        py: [3.10]
+        py: ["3.10"]
     with:
       py: ${{ matrix.py }}
