@@ -62,18 +62,17 @@ jobs:
       id: release_notes
       run: |
         cat << EOF > release_notes.md
-        # Release v${{ steps.get_version.outputs.version }}
         
         ## Installation Instructions
         
         Install the latest version:
         \`\`\`bash
-        pip install "${{ github.event.repository.name }} @ https://github.com/${{ github.repository }}/releases/latest/download/${{ github.event.repository.name }}-${{ steps.get_version.outputs.version }}-py3-none-any.whl"
+        pip install "${{ github.event.repository.name }} @ https://github.com/${{ github.repository }}/releases/latest/download/smse-${{ steps.get_version.outputs.version }}-linx-x86_64.whl"
         \`\`\`
         
         Install this specific version:
         \`\`\`bash
-        pip install "${{ github.event.repository.name }} @ https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/${{ github.event.repository.name }}-${{ steps.get_version.outputs.version }}-py3-none-any.whl"
+        pip install "${{ github.event.repository.name }} @ https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/smse-${{ steps.get_version.outputs.version }}-linx-x86_64.whl"
         \`\`\`
         
         ## Available Python Versions
@@ -82,9 +81,7 @@ jobs:
         - Python 3.11
         - Python 3.12
         - Python 3.13
-        
-        ## What's New
-        <!-- Add release notes here -->
+
         EOF
         
     - name: Upload Release Assets
