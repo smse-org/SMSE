@@ -24,35 +24,35 @@ jobs:
         python-version: ${{ matrix.python-version }}
         
     - name: Setup Poetry
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: 'latest'
+      uses: abatilo/actions-poetry@v2
+      with:
+        poetry-version: 'latest'
 
     - name: Setup a local virtual environment
-        run: |
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
+      run: |
+        poetry config virtualenvs.create true --local
+        poetry config virtualenvs.in-project true --local
 
     - name: Define a cache for the virtual environment based on the dependencies lock file
-        uses: actions/cache@v3
-        with:
-          path: ./.venv
-          key: venv-${{ hashFiles('poetry.lock') }}
+      uses: actions/cache@v3
+      with:
+        path: ./.venv
+        key: venv-${{ hashFiles('poetry.lock') }}
 
     - name: Install the project dependencies
-        run: poetry install
+      run: poetry install
 
     - name: Build the project
-        run: |
-          poetry build
+      run: |
+        poetry build
 
-          # Rename wheels to indicate Python version compatibility
-          for wheel in dist/*.whl; do
-            # Get the original name without extension
-            base=$(basename "$wheel" .whl)
-            # Rename to indicate Python version compatibility
-            mv "$wheel" "dist/${base}-py${{ matrix.python-version }}.whl"
-          done
+        # Rename wheels to indicate Python version compatibility
+        for wheel in dist/*.whl; do
+          # Get the original name without extension
+          base=$(basename "$wheel" .whl)
+          # Rename to indicate Python version compatibility
+          mv "$wheel" "dist/${base}-py${{ matrix.python-version }}.whl"
+        done
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
