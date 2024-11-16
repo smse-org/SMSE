@@ -61,7 +61,7 @@ jobs:
           # Get the original name without extension
           base=$(basename "$wheel" .whl)
           # Rename to indicate Python version compatibility
-          mv "$wheel" "dist/${base}-py${{ matrix.python-version }}.whl"
+          mv "$wheel" "dist/smse-${{ steps.get_version.outputs.version }}-linx-x86_64.whl"
         done
         
     - name: Upload build artifacts
