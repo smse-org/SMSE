@@ -1,13 +1,39 @@
-name: Create Release
+name: Release
+
+run-name: Release (${{ inputs.release_type }})
 
 on:
-  workflow_run:
-    workflows: ["Build Project"]
-    types:
-      - completed
+  workflow_call:
+    inputs:
+      release_type:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      release_type:
+        type: choice
+        required: true
+        options:
+          - 'nightly'
+          - 'rc'
+          - 'stable'
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
+  build-wheel:
+    name: Build Wheel for Python ${{ matrix.py }} on linux-x86_64
+    uses: ./.github/workflows/build-workflow.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        py: ["3.10"]
+    with:
+      py: ${{ matrix.py }}
+
   release:
+    permissions: write-all
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
@@ -17,7 +43,7 @@ jobs:
     - name: Download all artifacts
       uses: actions/download-artifact@v4
       with:
-        pattern: dist-py*
+        pattern: smse-*.whl
         merge-multiple: true
         path: combined-dist
         
@@ -70,7 +96,7 @@ jobs:
         tag_name: v${{ steps.get_version.outputs.version }}
         release_name: Release v${{ steps.get_version.outputs.version }}
         body_path: release_notes.md
-        draft: false
+        draft: true
         prerelease: false
         
     - name: Upload Release Assets
