@@ -16,4 +16,4 @@ env:
 jobs:
   lint_py:
     name: Lint Python
-    uses: ./.github/workflows/lint-workflow.yaml
+    uses: ./.github/workflows/lint-workflow.yml
