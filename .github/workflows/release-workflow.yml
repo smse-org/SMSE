@@ -103,6 +103,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: combined-dist/*
-        tag_name: v${{ github.run_number }}
+        tag_name: v${{ steps.get_version.outputs.version }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
