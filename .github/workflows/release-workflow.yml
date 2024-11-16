@@ -33,6 +33,7 @@ jobs:
       py: ${{ matrix.py }}
 
   release:
+    needs: build-wheel
     permissions: write-all
     runs-on: ubuntu-latest
     
