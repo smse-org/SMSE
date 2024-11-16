@@ -1,0 +1,21 @@
+name: CI Test
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'doc/**'
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+jobs:
+  test:
+    name: Run Tests on Python ${{ matrix.py }}
+    uses: ./.github/workflows/test-workflow.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        py: ['3.10', '3.11', '3.12', '3.13']
+    with:
+      py: ${{ matrix.py }}
