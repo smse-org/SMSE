@@ -94,6 +94,7 @@ jobs:
         tag_name: v${{ steps.get_version.outputs.version }}
         name: Release v${{ steps.get_version.outputs.version }}
         body_path: release_notes.md
+        generate_release_notes: true
         draft: true
         prerelease: false
       env:
