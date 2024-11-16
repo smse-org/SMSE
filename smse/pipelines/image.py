@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Union, cast
 
 import numpy as np
 from numpy.typing import NDArray
