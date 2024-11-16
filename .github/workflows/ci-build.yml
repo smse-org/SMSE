@@ -11,7 +11,7 @@ env:
 
 jobs:
   build-wheel:
-    name: Build Wheel for Python ${{ matrix.py }} on ${{ matrix.os }}
+    name: Build Wheel for Python ${{ matrix.py }} on linux-x86_64
     uses: ./.github/workflows/build-workflow.yml
     strategy:
       fail-fast: false
