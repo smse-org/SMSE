@@ -60,7 +60,7 @@ class TextPipeline(BasePipeline):
 
         return chunks
 
-    def preprocess(self, text: str) -> Union[List[str], List[List[int]]]:
+    def process(self, text: str) -> Union[List[str], List[List[int]]]:
         """Preprocess text data"""
         chunks = self._split_into_chunks(text)
 

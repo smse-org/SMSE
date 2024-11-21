@@ -45,7 +45,7 @@ class AudioPipeline(BasePipeline):
     def validate(self, data: Any) -> bool:
         return isinstance(data, AudioT)
 
-    def preprocess(self, audio_data: AudioT) -> AudioT:
+    def process(self, audio_data: AudioT) -> AudioT:
         """Preprocess audio data"""
         audio, sr = audio_data.audio, audio_data.sample_rate
 

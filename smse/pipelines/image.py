@@ -42,7 +42,7 @@ class ImagePipeline(BasePipeline):
     def validate(self, data: Any) -> bool:
         return isinstance(data, np.ndarray) and len(data.shape) in [2, 3]
 
-    def preprocess(self, image: ImageT) -> ImageT:
+    def process(self, image: ImageT) -> ImageT:
         """Preprocess image data"""
         import cv2  # type: ignore[import-not-found]
 
