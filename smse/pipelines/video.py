@@ -4,15 +4,10 @@ from typing import Any, List, Union
 
 import numpy as np
 
-from smse.pipelines.audio import AudioConfig, AudioPipeline, AudioT
+from smse.pipelines.audio import AudioConfig, AudioPipeline
 from smse.pipelines.base import BasePipeline, PipelineConfig
-from smse.pipelines.image import ImageConfig, ImagePipeline, ImageT
-
-
-@dataclass
-class VideoT:
-    frames: ImageT | List[ImageT]
-    audio: AudioT
+from smse.pipelines.image import ImageConfig, ImagePipeline
+from smse.types import AudioT, ImageT, VideoT
 
 
 @dataclass
@@ -46,7 +41,7 @@ class VideoPipeline(BasePipeline):
             cap.release()
 
             # Load audio using AudioPipeline
-            audio_data = self.audio_pipeline.load(input_path)
+            audio_data: AudioT = self.audio_pipeline.load(input_path)
 
             return VideoT(frames=frames, audio=audio_data)
         except ImportError:

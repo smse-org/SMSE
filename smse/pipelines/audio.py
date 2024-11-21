@@ -3,15 +3,9 @@ from pathlib import Path
 from typing import Any, Union
 
 import numpy as np
-from numpy.typing import NDArray
 
 from smse.pipelines.base import BasePipeline, PipelineConfig
-
-
-@dataclass
-class AudioT:
-    audio: NDArray[np.float32]
-    sample_rate: int
+from smse.types import AudioT
 
 
 @dataclass

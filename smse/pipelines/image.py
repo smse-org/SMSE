@@ -3,11 +3,9 @@ from pathlib import Path
 from typing import Any, Union
 
 import numpy as np
-from numpy.typing import NDArray
 
 from smse.pipelines.base import BasePipeline, PipelineConfig
-
-ImageT = NDArray[np.float64 | np.uint8]
+from smse.types import ImageT
 
 
 @dataclass
