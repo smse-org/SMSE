@@ -1,5 +1,6 @@
-from smse.pipelines.audio import AudioPipeline
-from smse.pipelines.base import BasePipeline
-from smse.pipelines.image import ImagePipeline
-from smse.pipelines.text import TextPipeline
-from smse.pipelines.video import VideoPipeline
+from smse.pipelines.audio import AudioConfig, AudioPipeline
+from smse.pipelines.base import BasePipeline, PipelineConfig
+from smse.pipelines.factory import MultimodalPipeline
+from smse.pipelines.image import ImageConfig, ImagePipeline
+from smse.pipelines.text import TextConfig, TextPipeline
+from smse.pipelines.video import VideoConfig, VideoPipeline

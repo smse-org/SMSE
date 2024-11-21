@@ -3,15 +3,9 @@ from pathlib import Path
 from typing import Any, Union
 
 import numpy as np
-from numpy.typing import NDArray
 
 from smse.pipelines.base import BasePipeline, PipelineConfig
-
-
-@dataclass
-class AudioT:
-    audio: NDArray[np.float32]
-    sample_rate: int
+from smse.types import AudioT
 
 
 @dataclass
@@ -45,7 +39,7 @@ class AudioPipeline(BasePipeline):
     def validate(self, data: Any) -> bool:
         return isinstance(data, AudioT)
 
-    def preprocess(self, audio_data: AudioT) -> AudioT:
+    def process(self, audio_data: AudioT) -> AudioT:
         """Preprocess audio data"""
         audio, sr = audio_data.audio, audio_data.sample_rate
 

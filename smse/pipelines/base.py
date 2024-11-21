@@ -1,24 +1,14 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from typing import Any, Optional, Union
-
-
-# Base configurations and types
-class DataType(Enum):
-    TEXT = "text"
-    IMAGE = "image"
-    AUDIO = "audio"
-    VIDEO = "video"
 
 
 @dataclass
 class PipelineConfig:
     """Base configuration for all pipelines"""
 
-    input_type: DataType
     max_sequence_length: Optional[int] = None
     batch_size: int = 32
     device: str = "cpu"
@@ -35,7 +25,7 @@ class BasePipeline(ABC):
         pass
 
     @abstractmethod
-    def preprocess(self, data: Any) -> Any:
+    def process(self, data: Any) -> Any:
         """Preprocess loaded data"""
         pass
 
@@ -54,4 +44,4 @@ class BasePipeline(ABC):
         if not self.validate(data):
             raise ValueError(f"Invalid data format for {self.__class__.__name__}")
 
-        return self.preprocess(data)
+        return self.process(data)

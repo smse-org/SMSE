@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, List, Optional, Union
 
 from smse.pipelines.base import BasePipeline, PipelineConfig
+from smse.types import TextT
 
 
 @dataclass
@@ -25,15 +26,15 @@ class TextPipeline(BasePipeline):
         self.config: TextConfig = config
         self._tokenizer = config.tokenizer
 
-    def load(self, input_path: Union[str, Path]) -> str:
+    def load(self, input_path: Union[TextT, Path]) -> TextT:
         """Load text from file"""
         with open(input_path, "r", encoding="utf-8") as f:
             return f.read()
 
     def validate(self, data: Any) -> bool:
-        return isinstance(data, str)
+        return isinstance(data, TextT)
 
-    def _split_into_chunks(self, text: str) -> List[str]:
+    def _split_into_chunks(self, text: TextT) -> List[TextT]:
         """Split text into chunks based on max_sequence_length"""
         if not self.config.max_sequence_length:
             return [text]
@@ -60,7 +61,7 @@ class TextPipeline(BasePipeline):
 
         return chunks
 
-    def preprocess(self, text: str) -> Union[List[str], List[List[int]]]:
+    def process(self, text: TextT) -> Union[List[TextT], List[List[int]]]:
         """Preprocess text data"""
         chunks = self._split_into_chunks(text)
 
