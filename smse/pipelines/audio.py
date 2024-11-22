@@ -4,12 +4,12 @@ from typing import Any, Union
 
 import numpy as np
 
-from smse.pipelines.base import BasePipeline, PipelineConfig
+from smse.pipelines.base import BasePipeline, BaseConfig
 from smse.types import AudioT
 
 
 @dataclass
-class AudioConfig(PipelineConfig):
+class AudioConfig(BaseConfig):
     sample_rate: int = 16000
     max_duration: float = 30.0
     mono: bool = True

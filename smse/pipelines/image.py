@@ -4,12 +4,12 @@ from typing import Any, Union
 
 import numpy as np
 
-from smse.pipelines.base import BasePipeline, PipelineConfig
+from smse.pipelines.base import BasePipeline, BaseConfig
 from smse.types import ImageT
 
 
 @dataclass
-class ImageConfig(PipelineConfig):
+class ImageConfig(BaseConfig):
     target_size: tuple[int, int] = (224, 224)
     channels: int = 3
     normalize: bool = True
