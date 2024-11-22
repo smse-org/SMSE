@@ -4,7 +4,7 @@ from typing import Any, Union
 
 import numpy as np
 
-from smse.pipelines.base import BasePipeline, BaseConfig
+from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import ImageT
 
 
@@ -32,7 +32,6 @@ class ImagePipeline(BasePipeline):
 
             return image
         except ImportError:
-            self.logger.warning("OpenCV not found, trying PIL")
             from PIL import Image  # type: ignore[import-not-found]
 
             return np.array(Image.open(str(input_path)))

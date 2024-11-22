@@ -4,7 +4,7 @@ from typing import Any, Union
 
 import numpy as np
 
-from smse.pipelines.base import BasePipeline, BaseConfig
+from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import AudioT
 
 

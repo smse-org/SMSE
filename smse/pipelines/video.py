@@ -5,7 +5,7 @@ from typing import Any, List, Union
 import numpy as np
 
 from smse.pipelines.audio import AudioConfig, AudioPipeline
-from smse.pipelines.base import BasePipeline, BaseConfig
+from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.pipelines.image import ImageConfig, ImagePipeline
 from smse.types import AudioT, ImageT, VideoT
 
