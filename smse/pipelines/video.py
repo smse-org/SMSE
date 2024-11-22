@@ -60,9 +60,7 @@ class VideoPipeline(BasePipeline):
             frames = [frames[i] for i in indices]
 
         # Process frames using ImagePipeline
-        processed_frames = np.stack(
-            [self.image_pipeline.process(frame) for frame in frames]
-        )
+        processed_frames = self.image_pipeline.process(frames)
 
         # Process audio if available
         processed_audio = None
