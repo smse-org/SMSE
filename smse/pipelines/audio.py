@@ -24,9 +24,11 @@ class AudioPipeline(BasePipeline):
 
     def load(self, input_path: Union[str, Path]) -> AudioT:
         """
-        Load audio data. If `input_path` is a directory, load all audio files in the directory.
+        Load audio data. If `input_path` is a directory, load all audio
+        files in the directory.
         """
         input_path = Path(input_path)
+        sr = 0
 
         if input_path.is_dir():
             # Load all audio files in the directory
@@ -44,8 +46,9 @@ class AudioPipeline(BasePipeline):
 
         # Validate sample rates for consistency
         sample_rate = sr
-        if not all(sr == sample_rate for sr in [sr]):
-            raise ValueError("All audio files must have the same sample rate.")
+        for waveform in audio_list:
+            if sr != waveform.shape[1]:
+                raise ValueError("Inconsistent sample rates in audio files")
 
         return AudioT(audio=audio_list, sample_rate=sample_rate)
 
