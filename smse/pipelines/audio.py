@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Union
 
-import numpy as np
+import torch
+import torchaudio
 
 from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import AudioT
@@ -12,8 +13,8 @@ from smse.types import AudioT
 class AudioConfig(BaseConfig):
     sample_rate: int = 16000
     max_duration: float = 30.0
-    mono: bool = True
-    normalize_audio: bool = True
+    mono: bool = False
+    normalize_audio: bool = False
 
 
 class AudioPipeline(BasePipeline):
@@ -22,40 +23,65 @@ class AudioPipeline(BasePipeline):
         self.config: AudioConfig = config
 
     def load(self, input_path: Union[str, Path]) -> AudioT:
-        """Load audio from file"""
-        try:
-            import librosa  # type: ignore[import-not-found]
+        """
+        Load audio data. If `input_path` is a directory, load all audio files in the directory.
+        """
+        input_path = Path(input_path)
 
-            audio, sr = librosa.load(
-                input_path,
-                sr=self.config.sample_rate,
-                mono=self.config.mono,
-                duration=self.config.max_duration,
-            )
-            return AudioT(audio=audio, sample_rate=sr)
-        except ImportError:
-            raise ImportError("librosa is required for audio processing")
+        if input_path.is_dir():
+            # Load all audio files in the directory
+            audio_files = list(
+                input_path.glob("*.wav")
+            )  # Adjust glob pattern for required extensions
+            audio_list = []
+            for file in audio_files:
+                waveform, sr = torchaudio.load(str(file))
+                audio_list.append(waveform)
+        else:
+            # Load a single audio file
+            waveform, sr = torchaudio.load(str(input_path))
+            audio_list = [waveform]
+
+        # Validate sample rates for consistency
+        sample_rate = sr
+        if not all(sr == sample_rate for sr in [sr]):
+            raise ValueError("All audio files must have the same sample rate.")
+
+        return AudioT(audio=audio_list, sample_rate=sample_rate)
 
     def validate(self, data: Any) -> bool:
         return isinstance(data, AudioT)
 
     def process(self, audio_data: AudioT) -> AudioT:
-        """Preprocess audio data"""
-        audio, sr = audio_data.audio, audio_data.sample_rate
+        """
+        Process a batch of audio files.
+        """
+        processed_audio = []
+        for waveform in audio_data.audio:
+            # Resample if needed
+            if audio_data.sample_rate != self.config.sample_rate:
+                resampler = torchaudio.transforms.Resample(
+                    orig_freq=audio_data.sample_rate,
+                    new_freq=self.config.sample_rate,
+                )
+                waveform = resampler(waveform)
 
-        if self.config.normalize_audio:
-            try:
-                import librosa  # type: ignore[import-not-found]
+            # Convert to mono if specified
+            if self.config.mono and waveform.shape[0] > 1:
+                waveform = torch.mean(waveform, dim=0, keepdim=True)
 
-                audio = librosa.util.normalize(audio)
-            except ImportError:
-                raise ImportError("librosa is required for audio processing")
+            # Normalize the waveform if specified
+            if self.config.normalize_audio:
+                waveform = waveform / torch.max(torch.abs(waveform))
 
-        # Add padding or truncate to fixed length if needed
-        target_length = int(self.config.max_duration * sr)
-        if len(audio) > target_length:
-            audio = audio[:target_length]
-        elif len(audio) < target_length:
-            audio = np.pad(audio, (0, target_length - len(audio)))
+            # Add padding or truncate to fixed length
+            target_length = int(self.config.max_duration * self.config.sample_rate)
+            if waveform.shape[1] > target_length:
+                waveform = waveform[:, :target_length]
+            elif waveform.shape[1] < target_length:
+                padding = torch.zeros((1, target_length - waveform.shape[1]))
+                waveform = torch.cat([waveform, padding], dim=1)
 
-        return AudioT(audio=audio, sample_rate=sr)
+            processed_audio.append(waveform)
+
+        return AudioT(audio=processed_audio, sample_rate=self.config.sample_rate)
