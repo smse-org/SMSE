@@ -38,20 +38,20 @@ jobs:
 
       - name: Run mypy
         run: |
-          mypy --install-types --non-interactive .
+          poetry run mypy --install-types --non-interactive .
         continue-on-error: false
 
       - name: Run flake8
         run: |
-          flake8 .
+          poetry run flake8 .
         continue-on-error: false
 
       - name: Run black
         run: |
-          black --check .
+          poetry run black --check .
         continue-on-error: false
 
       - name: Run isort
         run: |
-          isort . --check-only
+          poetry run isort . --check-only
         continue-on-error: false
