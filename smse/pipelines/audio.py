@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Union
 
 import torch
-import torchaudio
+import torchaudio  # type: ignore[import-untyped,import-not-found]
 
 from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import AudioT
