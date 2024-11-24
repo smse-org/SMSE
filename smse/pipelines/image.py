@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from PIL import Image
 from torchvision import transforms  # type: ignore[import-untyped]
+from torchvision.io import read_image  # type: ignore[import-untyped]
 from torchvision.transforms import functional as F  # type: ignore[import-untyped]
 
 from smse.pipelines.base import BasePipeline, PipelineConfig
@@ -63,6 +64,11 @@ class ImagePipeline(BasePipeline):
 
         Args:
             image (ImageT): Input image.
+                1- 1: Converts to binary (Black-White)
+                2- L: Converts to Gray-scale
+                3- RGB: Converts to RGB
+                4- BGR: Reverses RGB channels
+                5: RGBA: Addes alpha channel for transparency
 
         Returns:
             ImageT: Image converted to the specified mode.
@@ -81,20 +87,23 @@ class ImagePipeline(BasePipeline):
             raise ValueError(f"Unsupported target color mode: {self.config.color_mode}")
         return image
 
-    def load(self, input_path: Union[str, Path]) -> ImageT:
-        """Load image from file"""
+    def load(self, input_path: Union[str, Path]) -> Image.Image:
+        """
+        Load an image from a file and return it as a PIL Image.
+
+        Args:
+            input_path (Union[str, Path]): Path to the input image.
+
+        Returns:
+            Image.Image: Loaded image as a PIL Image.
+        """
         try:
-            import cv2  # type: ignore[import-not-found]
-
-            image: ImageT = cv2.imread(str(input_path))
-            if image is None:
-                raise ValueError(f"Failed to load image: {input_path}")
-            return image
-        except ImportError:
-            self.logger.warning("OpenCV not found, trying PIL")
-            from PIL import Image  # type: ignore[import-not-found]
-
-            return np.array(Image.open(str(input_path)))
+            tensor_image = read_image(str(input_path))  # Returns a tensor in [C, H, W]
+            # Convert tensor to PIL Image for further processing
+            pil_image: Image.Image = F.to_pil_image(tensor_image)
+            return pil_image
+        except Exception as e:
+            raise ValueError(f"Failed to load image: {input_path}. Error: {e}")
 
     def process(self, images: List[ImageT]) -> torch.Tensor:
         """
