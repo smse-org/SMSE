@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List
 
 import numpy as np
-from PIL import Image
 from numpy.typing import NDArray
+from PIL import Image
 
 AudioArrayT = NDArray[np.float32]
 ImageT = NDArray[np.float64 | np.uint8] | Image.Image

@@ -1,13 +1,12 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union, Optional, List
+from typing import Any, List, Union
 
-import torch
 import numpy as np
-from torchvision import transforms # type: ignore[import-untyped]
-from torchvision.transforms import functional as F # type: ignore[import-untyped]
-from numpy.typing import NDArray
+import torch
 from PIL import Image
+from torchvision import transforms  # type: ignore[import-untyped]
+from torchvision.transforms import functional as F  # type: ignore[import-untyped]
 
 from smse.pipelines.base import BasePipeline, PipelineConfig
 from smse.types import ImageT
@@ -25,6 +24,7 @@ class ImageConfig(PipelineConfig):
         mean: Default mean values for RGB normalization.
         std: Standard deviation values for RGB normalization.
     """
+
     target_size: tuple[int, int] = (224, 224)
     color_mode: str = "RGB"
     normalize: bool = True
@@ -43,7 +43,7 @@ class ImagePipeline(BasePipeline):
     def _create_transform_pipeline(self) -> transforms.Compose:
         """Create a transformation pipeline for image preprocessing."""
         transform_list = [
-            transforms.Lambda(self._ensure_rgb),  # Ensure RGB Color mode.
+            transforms.Lambda(self._convert_mode),  # Ensure specified color mode.
             transforms.ToTensor(),  # Convert PIL to Tensor
         ]
 
@@ -51,21 +51,41 @@ class ImagePipeline(BasePipeline):
             transform_list.append(transforms.Resize(self.config.target_size))
 
         if self.config.normalize:  # Normalize images.
-            transform_list.append(transforms.Normalize(mean=self.config.mean, std=self.config.std))
+            transform_list.append(
+                transforms.Normalize(mean=self.config.mean, std=self.config.std)
+            )
 
         return transforms.Compose(transform_list)
 
-    @staticmethod
-    def _ensure_rgb(image: Image.Image) -> Image.Image:
-        """Ensure image is in RGB mode."""
-        if image.mode != "RGB":
+    def _convert_mode(self, image: Image.Image) -> Image.Image:
+        """
+        Convert an image to the specified color mode.
+
+        Args:
+            image (ImageT): Input image.
+
+        Returns:
+            ImageT: Image converted to the specified mode.
+        """
+        if self.config.color_mode.upper() == "RGB":
+            # Convert to RGB
             image = image.convert("RGB")
+        elif self.config.color_mode.upper() == "BGR":
+            # Convert to BGR by swapping RGB channels
+            image = image.convert("RGB")
+            image = Image.fromarray(np.array(image)[..., ::-1])  # Reverse channel order
+        elif self.config.color_mode.upper() in ["L", "1", "RGBA", "RGB"]:
+            # Convert to the specified mode directly
+            image = image.convert(self.config.color_mode.upper())
+        else:
+            raise ValueError(f"Unsupported target color mode: {self.config.color_mode}")
         return image
 
     def load(self, input_path: Union[str, Path]) -> ImageT:
         """Load image from file"""
         try:
             import cv2  # type: ignore[import-not-found]
+
             image: ImageT = cv2.imread(str(input_path))
             if image is None:
                 raise ValueError(f"Failed to load image: {input_path}")
@@ -73,20 +93,25 @@ class ImagePipeline(BasePipeline):
         except ImportError:
             self.logger.warning("OpenCV not found, trying PIL")
             from PIL import Image  # type: ignore[import-not-found]
+
             return np.array(Image.open(str(input_path)))
 
-    def process(self, images: List[ImageT], device: Optional[torch.device] = None) -> torch.Tensor:
+    def process(self, images: List[ImageT]) -> torch.Tensor:
         """
         Preprocess a list of images using the transform pipeline.
 
         Args:
-            images (list[PIL.Image | ImageT]): List of input images (either PIL or NumPy).
+            images (list[PIL.Image | ImageT]): List of input images
+            (either PIL or NumPy).
 
         Returns:
             torch.Tensor: Preprocessed batch of images with shape [B, C, H, W].
         """
-        if device is None:
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device(
+            self.config.device
+            if torch.cuda.is_available() or self.config.device == "cpu"
+            else "cpu"
+        )
 
         processed_images = []
         for image in images:
