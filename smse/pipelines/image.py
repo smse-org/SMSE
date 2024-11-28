@@ -1,19 +1,33 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, List, Union
 
 import numpy as np
-from numpy.typing import NDArray
+import torch
+from PIL import Image
+from torchvision import transforms  # type: ignore[import-untyped]
+from torchvision.io import read_image  # type: ignore[import-untyped]
+from torchvision.transforms import functional as F  # type: ignore[import-untyped]
 
 from smse.pipelines.base import BasePipeline, PipelineConfig
-
-ImageT = NDArray[np.float64 | np.uint8]
+from smse.types import ImageT
 
 
 @dataclass
 class ImageConfig(PipelineConfig):
+    """
+    Configuration for processing image in a pipeline
+
+    Attributes:
+        target_size: Default target size for image resizing.
+        color_mode: Default color mode for the image.
+        normalizer: Default applicaton of normalization (Do it or not).
+        mean: Default mean values for RGB normalization.
+        std: Standard deviation values for RGB normalization.
+    """
+
     target_size: tuple[int, int] = (224, 224)
-    channels: int = 3
+    color_mode: str = "RGB"
     normalize: bool = True
     mean: tuple[float, float, float] = (0.485, 0.456, 0.406)
     std: tuple[float, float, float] = (0.229, 0.224, 0.225)
@@ -24,43 +38,99 @@ class ImagePipeline(BasePipeline):
     def __init__(self, config: ImageConfig):
         super().__init__(config)
         self.config: ImageConfig = config
+        # Initialize the transform Pipeline.
+        self.transform_pipeline = self._create_transform_pipeline()
 
-    def load(self, input_path: Union[str, Path]) -> ImageT:
-        """Load image from file"""
+    def _create_transform_pipeline(self) -> transforms.Compose:
+        """Create a transformation pipeline for image preprocessing."""
+        transform_list = [
+            transforms.Lambda(self._convert_mode),  # Ensure specified color mode.
+            transforms.ToTensor(),  # Convert PIL to Tensor
+        ]
+
+        if self.config.target_size:  # Resize images.
+            transform_list.append(transforms.Resize(self.config.target_size))
+
+        if self.config.normalize:  # Normalize images.
+            transform_list.append(
+                transforms.Normalize(mean=self.config.mean, std=self.config.std)
+            )
+
+        return transforms.Compose(transform_list)
+
+    def _convert_mode(self, image: Image.Image) -> Image.Image:
+        """
+        Convert an image to the specified color mode.
+
+        Args:
+            image (ImageT): Input image.
+                1- 1: Converts to binary (Black-White)
+                2- L: Converts to Gray-scale
+                3- RGB: Converts to RGB
+                4- BGR: Reverses RGB channels
+                5: RGBA: Addes alpha channel for transparency
+
+        Returns:
+            ImageT: Image converted to the specified mode.
+        """
+        if self.config.color_mode.upper() == "RGB":
+            # Convert to RGB
+            image = image.convert("RGB")
+        elif self.config.color_mode.upper() == "BGR":
+            # Convert to BGR by swapping RGB channels
+            image = image.convert("RGB")
+            image = Image.fromarray(np.array(image)[..., ::-1])  # Reverse channel order
+        elif self.config.color_mode.upper() in ["L", "1", "RGBA", "RGB"]:
+            # Convert to the specified mode directly
+            image = image.convert(self.config.color_mode.upper())
+        else:
+            raise ValueError(f"Unsupported target color mode: {self.config.color_mode}")
+        return image
+
+    def load(self, input_path: Union[str, Path]) -> Image.Image:
+        """
+        Load an image from a file and return it as a PIL Image.
+
+        Args:
+            input_path (Union[str, Path]): Path to the input image.
+
+        Returns:
+            Image.Image: Loaded image as a PIL Image.
+        """
         try:
-            import cv2  # type: ignore[import-not-found]
+            tensor_image = read_image(str(input_path))  # Returns a tensor in [C, H, W]
+            # Convert tensor to PIL Image for further processing
+            pil_image: Image.Image = F.to_pil_image(tensor_image)
+            return pil_image
+        except Exception as e:
+            raise ValueError(f"Failed to load image: {input_path}. Error: {e}")
 
-            image: ImageT = cv2.imread(str(input_path))
+    def process(self, images: List[ImageT]) -> torch.Tensor:
+        """
+        Preprocess a list of images using the transform pipeline.
 
-            return image
-        except ImportError:
-            self.logger.warning("OpenCV not found, trying PIL")
-            from PIL import Image  # type: ignore[import-not-found]
+        Args:
+            images (list[PIL.Image | ImageT]): List of input images
+            (either PIL or NumPy).
 
-            return np.array(Image.open(str(input_path)))
+        Returns:
+            torch.Tensor: Preprocessed batch of images with shape [B, C, H, W].
+        """
+        device = torch.device(
+            self.config.device
+            if torch.cuda.is_available() or self.config.device == "cpu"
+            else "cpu"
+        )
+
+        processed_images = []
+        for image in images:
+            if isinstance(image, np.ndarray):  # Convert NumPy to PIL
+                image = Image.fromarray(image)
+            elif isinstance(image, torch.Tensor):  # Convert tensor to PIL
+                image = F.to_pil_image(image)
+            processed_images.append(self.transform_pipeline(image))
+
+        return torch.stack(processed_images).to(device)
 
     def validate(self, data: Any) -> bool:
         return isinstance(data, np.ndarray) and len(data.shape) in [2, 3]
-
-    def preprocess(self, image: ImageT) -> ImageT:
-        """Preprocess image data"""
-        import cv2  # type: ignore[import-not-found]
-
-        # Resize
-        image = cv2.resize(image, self.config.target_size)
-
-        # Ensure correct number of channels
-        if len(image.shape) == 2:
-            image = np.stack([image] * self.config.channels, axis=-1)
-        elif image.shape[-1] != self.config.channels:
-            if self.config.channels == 1:
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)[..., None]
-            else:
-                image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-
-        # Normalize
-        if self.config.normalize:
-            image = image.astype(np.float32) / 255.0
-            image = (image - self.config.mean) / self.config.std
-
-        return image
