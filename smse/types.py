@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List
 
 import numpy as np
 import torch
 from numpy.typing import NDArray
+from PIL import Image
 
-ImageT = NDArray[Union[np.float64, np.uint8]]
+ImageT = NDArray[np.float64 | np.uint8] | Image.Image
 TextT = str
 
 
@@ -17,5 +18,5 @@ class AudioT:
 
 @dataclass
 class VideoT:
-    frames: Union[ImageT, List[ImageT]]
+    frames: List[ImageT]
     audio: AudioT
