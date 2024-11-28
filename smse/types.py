@@ -2,18 +2,18 @@ from dataclasses import dataclass
 from typing import List
 
 import numpy as np
+import torch
 from numpy.typing import NDArray
 from PIL import Image
 
-AudioArrayT = NDArray[np.float32]
-ImageT = NDArray[np.float64 | np.uint8] | Image.Image
+ImageT = NDArray[np.float64 | np.uint8] | Image.Image | torch.Tensor
 TextT = str
 
 
 @dataclass
 class AudioT:
-    audio: AudioArrayT
-    sample_rate: int
+    audio: List[torch.Tensor]
+    sampling_rate: int
 
 
 @dataclass
