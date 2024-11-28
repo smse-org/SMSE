@@ -18,5 +18,5 @@ class AudioT:
 
 @dataclass
 class VideoT:
-    frames: List[ImageT] | torch.Tensor
+    frames: List[ImageT]
     audio: AudioT

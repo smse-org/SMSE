@@ -67,4 +67,4 @@ class VideoPipeline(BasePipeline):
         if video_data.audio is not None:
             processed_audio = self.audio_pipeline.process(video_data.audio)
 
-        return VideoT(frames=processed_frames, audio=processed_audio)
+        return VideoT(frames=[processed_frames], audio=processed_audio)
