@@ -12,7 +12,7 @@ TextT = str
 @dataclass
 class AudioT:
     audio: List[torch.Tensor]
-    sample_rate: int
+    sampling_rate: int
 
 
 @dataclass
