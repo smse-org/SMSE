@@ -11,7 +11,7 @@ from smse.types import AudioT
 
 @dataclass
 class AudioConfig(BaseConfig):
-    sample_rate: int = 16000
+    sampling_rate: int = 16000
     max_duration: float = 30.0
     mono: bool = False
     normalize_audio: bool = False
@@ -39,9 +39,9 @@ class AudioPipeline(BasePipeline):
             for file in audio_files:
                 waveform, sr = torchaudio.load(str(file))
 
-                if sr is not None and sr != self.config.sample_rate:
+                if sr is not None and sr != self.config.sampling_rate:
                     raise ValueError(
-                        f"Sample rate of {file} is {sr}, but expected {self.config.sample_rate}"
+                        f"Sample rate of {file} is {sr}, but expected {self.config.sampling_rate}"
                     )
 
                 audio_list.append(waveform)
@@ -50,7 +50,7 @@ class AudioPipeline(BasePipeline):
             waveform, sr = torchaudio.load(str(input_path))
             audio_list = [waveform]
 
-        return AudioT(audio=audio_list, sample_rate=sr)
+        return AudioT(audio=audio_list, sampling_rate=sr)
 
     def validate(self, data: Any) -> bool:
         return isinstance(data, AudioT)
@@ -60,11 +60,11 @@ class AudioPipeline(BasePipeline):
         Process a batch of audio files.
         """
         resampler = torchaudio.transforms.Resample(
-            orig_freq=audio_data.sample_rate,
-            new_freq=self.config.sample_rate,
+            orig_freq=audio_data.sampling_rate,
+            new_freq=self.config.sampling_rate,
         )
 
-        target_length = int(self.config.max_duration * self.config.sample_rate)
+        target_length = int(self.config.max_duration * self.config.sampling_rate)
 
         processed_audio = []
         for waveform in audio_data.audio:
@@ -73,7 +73,7 @@ class AudioPipeline(BasePipeline):
                 waveform = waveform.unsqueeze(0)
 
             # Resample if needed
-            if audio_data.sample_rate != self.config.sample_rate:
+            if audio_data.sampling_rate != self.config.sampling_rate:
                 waveform = resampler(waveform)
 
             # Convert to mono if specified
@@ -94,4 +94,4 @@ class AudioPipeline(BasePipeline):
 
             processed_audio.append(waveform)
 
-        return AudioT(audio=processed_audio, sample_rate=self.config.sample_rate)
+        return AudioT(audio=processed_audio, sampling_rate=self.config.sampling_rate)
