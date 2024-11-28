@@ -33,6 +33,12 @@ jobs:
           poetry config virtualenvs.create true --local
           poetry config virtualenvs.in-project true --local
 
+      - name: Cache the virtual environment
+        uses: actions/cache@v3
+        with:
+          path: ./.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('poetry.lock') }}
+
       - name: Install the project dependencies
         run: poetry install --with dev,audio,vision
 
