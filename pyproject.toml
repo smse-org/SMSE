@@ -39,6 +39,11 @@ torch = "^2.5.1"
 torchvision = "^0.20.1"
 torch = "^2.5.1"
 
+[tool.poetry.extras]
+audio = ["torchaudio", "torch"]
+vision = ["torchvision", "torch"]
+dev = ["mypy", "black", "isort", "flake8", "pytest"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
