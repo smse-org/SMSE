@@ -28,7 +28,7 @@ class AudioPipeline(BasePipeline):
         files in the directory.
         """
         input_path = Path(input_path)
-        sr = 0
+        sr = None
 
         if input_path.is_dir():
             # Load all audio files in the directory
@@ -38,19 +38,19 @@ class AudioPipeline(BasePipeline):
             audio_list = []
             for file in audio_files:
                 waveform, sr = torchaudio.load(str(file))
+
+                if sr is not None and sr != self.config.sample_rate:
+                    raise ValueError(
+                        f"Sample rate of {file} is {sr}, but expected {self.config.sample_rate}"
+                    )
+
                 audio_list.append(waveform)
         else:
             # Load a single audio file
             waveform, sr = torchaudio.load(str(input_path))
             audio_list = [waveform]
 
-        # Validate sample rates for consistency
-        sample_rate = sr
-        for waveform in audio_list:
-            if sr != waveform.shape[1]:
-                raise ValueError("Inconsistent sample rates in audio files")
-
-        return AudioT(audio=audio_list, sample_rate=sample_rate)
+        return AudioT(audio=audio_list, sample_rate=sr)
 
     def validate(self, data: Any) -> bool:
         return isinstance(data, AudioT)
