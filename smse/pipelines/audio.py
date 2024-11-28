@@ -79,11 +79,11 @@ class AudioPipeline(BasePipeline):
 
             # Add padding or truncate to fixed length
             target_length = int(self.config.max_duration * self.config.sample_rate)
-            if waveform.shape[1] > target_length:
-                waveform = waveform[:, :target_length]
-            elif waveform.shape[1] < target_length:
-                padding = torch.zeros((1, target_length - waveform.shape[1]))
-                waveform = torch.cat([waveform, padding], dim=1)
+            if waveform.shape[0] > target_length:
+                waveform = waveform[:target_length]
+            elif waveform.shape[0] < target_length:
+                padding = torch.zeros((target_length - waveform.shape[0]))
+                waveform = torch.cat([waveform, padding], dim=0)
 
             processed_audio.append(waveform)
 
