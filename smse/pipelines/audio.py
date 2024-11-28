@@ -28,7 +28,6 @@ class AudioPipeline(BasePipeline):
         files in the directory.
         """
         input_path = Path(input_path)
-        sr = None
 
         if input_path.is_dir():
             # Load all audio files in the directory
@@ -39,9 +38,10 @@ class AudioPipeline(BasePipeline):
             for file in audio_files:
                 waveform, sr = torchaudio.load(str(file))
 
-                if sr is not None and sr != self.config.sampling_rate:
+                if sr != self.config.sampling_rate:
                     raise ValueError(
-                        f"Sample rate of {file} is {sr}, but expected {self.config.sampling_rate}"
+                        f"Sample rate of {file} is {sr}, "
+                        "but expected {self.config.sampling_rate}"
                     )
 
                 audio_list.append(waveform)
@@ -50,7 +50,7 @@ class AudioPipeline(BasePipeline):
             waveform, sr = torchaudio.load(str(input_path))
             audio_list = [waveform]
 
-        return AudioT(audio=audio_list, sampling_rate=sr)
+        return AudioT(audio=audio_list, sampling_rate=self.config.sampling_rate)
 
     def validate(self, data: Any) -> bool:
         return isinstance(data, AudioT)
