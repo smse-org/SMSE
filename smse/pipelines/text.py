@@ -2,9 +2,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Union
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from smse.pipelines.base import BasePipeline, PipelineConfig
+from smse.pipelines.base import BaseConfig, BasePipeline, PipelineConfig
+from smse.types import TextT
+
 @dataclass
-class TextConfig(PipelineConfig):
+class TextConfig(BaseConfig):
     """Configuration class for text pipeline"""
 
     chunk_overlap: int = 0
@@ -23,15 +25,15 @@ class TextPipeline(BasePipeline):
         self.config: TextConfig = config
         self._tokenizer = config.tokenizer
 
-    def load(self, input_path: Union[str, Path]) -> str:
+    def load(self, input_path: Union[TextT, Path]) -> TextT:
         """Load text from file"""
         with open(input_path, "r", encoding="utf-8") as f:
             return f.read()
 
     def validate(self, data: Any) -> bool:
-        return isinstance(data, str)
+        return isinstance(data, TextT)
 
-    def _split_into_chunks(self, text: str) -> List[str]:
+    def _split_into_chunks(self, text: TextT) -> List[TextT]:
         """Split text into chunks based on max_sequence_length"""
         if not self.config.max_sequence_length:
             return [text]

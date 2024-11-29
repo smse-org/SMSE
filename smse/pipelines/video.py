@@ -4,23 +4,18 @@ from typing import Any, List, Union
 
 import numpy as np
 
-from smse.pipelines.audio import AudioConfig, AudioPipeline, AudioT
-from smse.pipelines.base import BasePipeline, DataType, PipelineConfig
-from smse.pipelines.image import ImageConfig, ImagePipeline, ImageT
+from smse.pipelines.audio import AudioConfig, AudioPipeline
+from smse.pipelines.base import BaseConfig, BasePipeline
+from smse.pipelines.image import ImageConfig, ImagePipeline
+from smse.types import AudioT, ImageT, VideoT
 
 
 @dataclass
-class VideoT:
-    frames: ImageT | List[ImageT]
-    audio: AudioT
-
-
-@dataclass
-class VideoConfig(PipelineConfig):
+class VideoConfig(BaseConfig):
     fps: int = 30
     max_frames: int = 32
-    image_config: ImageConfig = ImageConfig(input_type=DataType.IMAGE)
-    audio_config: AudioConfig = AudioConfig(input_type=DataType.AUDIO)
+    image_config: ImageConfig = ImageConfig()
+    audio_config: AudioConfig = AudioConfig()
 
 
 # Video Pipeline
@@ -46,7 +41,7 @@ class VideoPipeline(BasePipeline):
             cap.release()
 
             # Load audio using AudioPipeline
-            audio_data = self.audio_pipeline.load(input_path)
+            audio_data: AudioT = self.audio_pipeline.load(input_path)
 
             return VideoT(frames=frames, audio=audio_data)
         except ImportError:
@@ -55,7 +50,7 @@ class VideoPipeline(BasePipeline):
     def validate(self, data: Any) -> bool:
         return isinstance(data, VideoT)
 
-    def preprocess(self, video_data: VideoT) -> VideoT:
+    def process(self, video_data: VideoT) -> VideoT:
         """Preprocess video data"""
         frames = video_data.frames
 
@@ -65,13 +60,11 @@ class VideoPipeline(BasePipeline):
             frames = [frames[i] for i in indices]
 
         # Process frames using ImagePipeline
-        processed_frames = np.stack(
-            [self.image_pipeline.preprocess(frame) for frame in frames]
-        )
+        processed_frames = self.image_pipeline.process(frames)
 
         # Process audio if available
         processed_audio = None
         if video_data.audio is not None:
-            processed_audio = self.audio_pipeline.preprocess(video_data.audio)
+            processed_audio = self.audio_pipeline.process(video_data.audio)
 
-        return VideoT(frames=processed_frames, audio=processed_audio)
+        return VideoT(frames=[processed_frames], audio=processed_audio)
