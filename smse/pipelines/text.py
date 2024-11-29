@@ -21,13 +21,12 @@ class TextConfig(PipelineConfig):
     max_sequence_length: int = 512
     """Maximum sequence length for tokenization"""
 
-
 class TextPipeline(BasePipeline):
     def __init__(self, config: TextConfig):
         super().__init__(config)
         self.config: TextConfig = config
         self._tokenizer = config.tokenizer
-
+        
     def load(self, input_path: Union[str, Path]) -> str:
         """Load text from file"""
         with open(input_path, "r", encoding="utf-8") as f:
