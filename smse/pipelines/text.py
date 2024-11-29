@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Union
-
-from smse.pipelines.base import BaseConfig, BasePipeline
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from smse.pipelines.base import BaseConfig, BasePipeline, PipelineConfig
 from smse.types import TextT
-
 
 @dataclass
 class TextConfig(BaseConfig):
@@ -39,25 +38,12 @@ class TextPipeline(BasePipeline):
         if not self.config.max_sequence_length:
             return [text]
 
-        # Simple chunking strategy - can be extended with more sophisticated approaches
-        words = text.split()
-        chunks = []
-        current_chunk: List[str] = []
-        current_length = 0
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.config.max_sequence_length,
+            chunk_overlap=self.config.chunk_overlap,  # if the context between the sentence is important -> 200 , if it's independent -> less than 200
+        )
 
-        for word in words:
-            word_length = len(word) + 1  # +1 for space
-            if current_length + word_length > self.config.max_sequence_length:
-                if current_chunk:  # Avoid empty chunks
-                    chunks.append(" ".join(current_chunk))
-                current_chunk = [word]
-                current_length = word_length
-            else:
-                current_chunk.append(word)
-                current_length += word_length
-
-        if current_chunk:
-            chunks.append(" ".join(current_chunk))
+        chunks = text_splitter.split_text(text)
 
         return chunks
 
