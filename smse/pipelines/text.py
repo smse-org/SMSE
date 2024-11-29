@@ -1,13 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Union
-
-from smse.pipelines.base import BasePipeline, PipelineConfig
-
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
-
-
+from smse.pipelines.base import BasePipeline, PipelineConfig
 @dataclass
 class TextConfig(PipelineConfig):
     """Configuration class for text pipeline"""
@@ -21,12 +16,13 @@ class TextConfig(PipelineConfig):
     max_sequence_length: int = 512
     """Maximum sequence length for tokenization"""
 
+
 class TextPipeline(BasePipeline):
     def __init__(self, config: TextConfig):
         super().__init__(config)
         self.config: TextConfig = config
         self._tokenizer = config.tokenizer
-        
+
     def load(self, input_path: Union[str, Path]) -> str:
         """Load text from file"""
         with open(input_path, "r", encoding="utf-8") as f:
@@ -39,14 +35,14 @@ class TextPipeline(BasePipeline):
         """Split text into chunks based on max_sequence_length"""
         if not self.config.max_sequence_length:
             return [text]
-        
+
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.config.max_sequence_length,
-            chunk_overlap=self.config.chunk_overlap         # if the context between the sentence is important -> 200 , if it's independent -> less than 200 
+            chunk_overlap=self.config.chunk_overlap,  # if the context between the sentence is important -> 200 , if it's independent -> less than 200
         )
 
         chunks = text_splitter.split_text(text)
-        
+
         return chunks
 
     def process(self, text: TextT) -> Union[List[TextT], List[List[int]]]:
