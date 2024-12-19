@@ -5,6 +5,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import TextT
 
+
 @dataclass
 class TextConfig(BaseConfig):
     """Configuration class for text pipeline"""
@@ -15,7 +16,7 @@ class TextConfig(BaseConfig):
     tokenizer: Optional[Any] = None
     """Tokenizer object to use for tokenization"""
 
-    max_sequence_length: int = 512
+    chunk_size: int = 512
     """Maximum sequence length for tokenization"""
 
 
@@ -34,12 +35,12 @@ class TextPipeline(BasePipeline):
         return isinstance(data, TextT)
 
     def _split_into_chunks(self, text: TextT) -> List[TextT]:
-        """Split text into chunks based on max_sequence_length"""
-        if not self.config.max_sequence_length:
+        """Split text into chunks based on chunk_size"""
+        if not self.config.chunk_size:
             return [text]
 
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=self.config.max_sequence_length,
+            chunk_size=self.config.chunk_size,
             chunk_overlap=self.config.chunk_overlap,  # if the context between the sentence is important -> 200 , if it's independent -> less than 200
         )
 
