@@ -2,6 +2,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Union
 
+from langchain.text_splitter import (
+    RecursiveCharacterTextSplitter,  # type: ignore[import-untyped,import-not-found]
+)
+
 from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import TextT
 
@@ -16,7 +20,7 @@ class TextConfig(BaseConfig):
     tokenizer: Optional[Any] = None
     """Tokenizer object to use for tokenization"""
 
-    max_sequence_length: int = 512
+    chunk_size: int = 512
     """Maximum sequence length for tokenization"""
 
 
@@ -35,29 +39,16 @@ class TextPipeline(BasePipeline):
         return isinstance(data, TextT)
 
     def _split_into_chunks(self, text: TextT) -> List[TextT]:
-        """Split text into chunks based on max_sequence_length"""
-        if not self.config.max_sequence_length:
+        """Split text into chunks based on chunk_size"""
+        if not self.config.chunk_size:
             return [text]
 
-        # Simple chunking strategy - can be extended with more sophisticated approaches
-        words = text.split()
-        chunks = []
-        current_chunk: List[str] = []
-        current_length = 0
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.config.chunk_size,
+            chunk_overlap=self.config.chunk_overlap,
+        )
 
-        for word in words:
-            word_length = len(word) + 1  # +1 for space
-            if current_length + word_length > self.config.max_sequence_length:
-                if current_chunk:  # Avoid empty chunks
-                    chunks.append(" ".join(current_chunk))
-                current_chunk = [word]
-                current_length = word_length
-            else:
-                current_chunk.append(word)
-                current_length += word_length
-
-        if current_chunk:
-            chunks.append(" ".join(current_chunk))
+        chunks: List[TextT] = text_splitter.split_text(text)
 
         return chunks
 

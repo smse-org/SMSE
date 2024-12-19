@@ -14,6 +14,7 @@ python = ">=3.10,<3.13"
 numpy = "^1.26.4"
 types-pillow = "^10.2.0.20240822"
 torch = "^2.5.1"
+langchain = "^0.3.13"
 
 [tool.poetry.group.dev]
 optional = true
