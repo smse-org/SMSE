@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Union
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+from langchain.text_splitter import (
+    RecursiveCharacterTextSplitter,  # type: ignore[import-untyped,import-not-found]
+)
+
 from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import TextT
 
@@ -41,10 +45,10 @@ class TextPipeline(BasePipeline):
 
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.config.chunk_size,
-            chunk_overlap=self.config.chunk_overlap,  # if the context between the sentence is important -> 200 , if it's independent -> less than 200
+            chunk_overlap=self.config.chunk_overlap,
         )
 
-        chunks = text_splitter.split_text(text)
+        chunks: List[TextT] = text_splitter.split_text(text)
 
         return chunks
 
