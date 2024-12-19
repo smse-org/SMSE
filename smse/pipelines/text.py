@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Union
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from smse.pipelines.base import BaseConfig, BasePipeline, PipelineConfig
+from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import TextT
 
 @dataclass
