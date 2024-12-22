@@ -1,26 +1,23 @@
 import torch
 from torch.utils.data import DataLoader
-from typing import Dict, Union
+from typing import TypeVar
 
 from smse.pipelines.text import TextPipeline
 from smse.pipelines.image import ImagePipeline
 from smse.pipelines.audio import AudioPipeline
 from smse.pipelines.factory import MultimodalPipeline
 
-PipelineDict = Dict[
-    str, Union[TextPipeline, ImagePipeline, AudioPipeline, MultimodalPipeline]
-]
-
+Pipeline = TypeVar('T', TextPipeline, ImagePipeline, AudioPipeline, MultimodalPipeline)
 
 class Evaluator:
     def __init__(
         self,
         model: torch.nn.Module,
-        pipeline_dict: PipelineDict,
+        pipeline: Pipeline,
         data_loader: DataLoader,
     ) -> None:
         self.model: torch.nn.Module = model
-        self.pipeline_dict: PipelineDict = pipeline_dict
+        self.pipeline: Pipeline = pipeline
         self.data_loader: DataLoader = data_loader
 
     def _select_pipeline(self, modality):
@@ -45,14 +42,7 @@ class Evaluator:
 
         with torch.no_grad():
             for raw_data in self.data_loader:
-                # Preprocesses data using the selected pipeline
-                if isinstance(pipeline, dict):
-                    inputs = {
-                        mod: pipeline[mod].preprocess(raw_data[mod]) for mod in pipeline
-                    }
-                else:
-                    inputs = pipeline.process(raw_data)
-
+                inputs = pipeline.process(raw_data)
                 outputs = self.model(inputs)
                 predictions.append(outputs)
 
