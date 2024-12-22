@@ -7,17 +7,17 @@ from smse.pipelines.image import ImagePipeline
 from smse.pipelines.audio import AudioPipeline
 from smse.pipelines.factory import MultimodalPipeline
 
-PipelineDict = Dict[str, Union[TextPipeline, 
-                               ImagePipeline, 
-                               AudioPipeline, 
-                               MultimodalPipeline]] 
+PipelineDict = Dict[
+    str, Union[TextPipeline, ImagePipeline, AudioPipeline, MultimodalPipeline]
+]
+
 
 class Evaluator:
     def __init__(
-            self,
-            model: torch.nn.Module,
-            pipeline_dict: PipelineDict,
-            data_loader: DataLoader
+        self,
+        model: torch.nn.Module,
+        pipeline_dict: PipelineDict,
+        data_loader: DataLoader,
     ) -> None:
         self.model: torch.nn.Module = model
         self.pipeline_dict: PipelineDict = pipeline_dict
@@ -29,12 +29,12 @@ class Evaluator:
             raise ValueError(f"No pipeline found for modality: {modality}")
         return self.pipeline_dict[modality]
 
-    def evaluate(self, modality):
+    def compute(self, modality):
         """
         Evaluate the model on a specific modality.
 
-        :param modality: The modality to evaluate ('image', 
-                                                    'text', 
+        :param modality: The modality to evaluate ('image',
+                                                    'text',
                                                     'audio',
                                                     'multimodal').
         :return: List of model outputs.
@@ -48,8 +48,7 @@ class Evaluator:
                 # Preprocesses data using the selected pipeline
                 if isinstance(pipeline, dict):
                     inputs = {
-                        mod: pipeline[mod].preprocess(raw_data[mod])
-                        for mod in pipeline
+                        mod: pipeline[mod].preprocess(raw_data[mod]) for mod in pipeline
                     }
                 else:
                     inputs = pipeline.process(raw_data)
