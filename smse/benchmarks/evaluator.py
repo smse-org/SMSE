@@ -1,12 +1,13 @@
 import torch
 from torch.utils.data import DataLoader
-from typing import TypeVar
+from typing import TypeVar, Union
 
 from smse.pipelines.text import TextPipeline
 from smse.pipelines.image import ImagePipeline
 from smse.pipelines.audio import AudioPipeline
 from smse.pipelines.factory import MultimodalPipeline
 
+PipelineDict = Union[TextPipeline, ImagePipeline, AudioPipeline, MultimodalPipeline]
 Pipeline = TypeVar('T', TextPipeline, ImagePipeline, AudioPipeline, MultimodalPipeline)
 
 class Evaluator:
@@ -22,7 +23,7 @@ class Evaluator:
 
     def _select_pipeline(self, modality):
         """Select pipeline based on modality."""
-        if modality not in self.pipeline_dict:
+        if modality not in PipelineDict:
             raise ValueError(f"No pipeline found for modality: {modality}")
         return self.pipeline_dict[modality]
 

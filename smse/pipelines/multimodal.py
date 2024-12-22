@@ -8,8 +8,8 @@ from smse.pipelines.audio import AudioPipeline
 Pipeline = TypeVar('T', TextPipeline, ImagePipeline, AudioPipeline)
 
 class MultimodalPipeline:
-    def __init__(self, pipelines: Pipeline):
-        self.pipelines = pipelines
+    def __init__(self, pipeline: Pipeline):
+        self.pipeline = pipeline
 
     def _process_single(self, data_type: str, input_data: Any) -> Any:
         """
@@ -18,9 +18,9 @@ class MultimodalPipeline:
         :param input_data: Raw input data for the modality.
         :return: Processed data.
         """
-        if data_type not in self.pipelines:
+        if data_type not in self.pipeline:
             raise ValueError(f"No pipeline configured for data type: {data_type}")
-        return self.pipelines[data_type].process(input_data)
+        return self.pipeline[data_type].process(input_data)
 
     def process(self, inputs: Dict[str, Union[str, Path, Any]]) -> Dict[str, Any]:
         """Process multiple modalities"""
