@@ -1,49 +1,72 @@
+from typing import Any, Dict, List
+
 import torch
 from torch.utils.data import DataLoader
-from typing import TypeVar, Union
 
-from smse.pipelines.text import TextPipeline
-from smse.pipelines.image import ImagePipeline
-from smse.pipelines.audio import AudioPipeline
-from smse.pipelines.factory import MultimodalPipeline
+from smse.pipelines.audio import AudioConfig, AudioPipeline
+from smse.pipelines.image import ImageConfig, ImagePipeline
+from smse.pipelines.multimodal import MultimodalPipeline, PipelineMapping
+from smse.pipelines.text import TextConfig, TextPipeline
+from smse.types import AudioT, ImageT, TextT
 
-PipelineDict = Union[TextPipeline, ImagePipeline, AudioPipeline, MultimodalPipeline]
-Pipeline = TypeVar('T', TextPipeline, ImagePipeline, AudioPipeline, MultimodalPipeline)
 
 class Evaluator:
     def __init__(
         self,
         model: torch.nn.Module,
-        pipeline: Pipeline,
-        data_loader: DataLoader,
+        pipeline: MultimodalPipeline,
+        data_loader: DataLoader[Any],
     ) -> None:
-        self.model: torch.nn.Module = model
-        self.pipeline: Pipeline = pipeline
-        self.data_loader: DataLoader = data_loader
+        """Initialize object of class Evaluator
 
-    def _select_pipeline(self, modality):
-        """Select pipeline based on modality."""
-        if modality not in PipelineDict:
-            raise ValueError(f"No pipeline found for modality: {modality}")
-        return self.pipeline_dict[modality]
-
-    def compute(self, modality):
+        Args:
+            model: The model evaluating our data-set
+            pipeline: The development's pipeline used to pre-process the data-set
+            data_loader: The data loader used to efficiently load the data_set
         """
-        Evaluate the model on a specific modality.
+        self.model = model
+        self.pipeline = pipeline
+        self.data_loader = data_loader
 
-        :param modality: The modality to evaluate ('image',
-                                                    'text',
-                                                    'audio',
-                                                    'multimodal').
-        :return: List of model outputs.
+        text_config = TextConfig()
+        image_config = ImageConfig()
+        audio_config = AudioConfig()
+
+        self.pipeline_dict: PipelineMapping = {
+            "text": TextPipeline(text_config),
+            "image": ImagePipeline(image_config),
+            "audio": AudioPipeline(audio_config),
+        }
+
+        self.multimodal_pipeline = MultimodalPipeline(self.pipeline_dict)
+
+    def compute(
+        self, data: Dict[ImageT | TextT | AudioT, List[ImageT | TextT | AudioT]]
+    ) -> List[torch.Tensor]:
         """
-        pipeline = self._select_pipeline(modality)
+        Evaluate the model on a dictionary of modality data.
+
+        Args:
+            data: Dictionary where keys are modalities ('image', 'text', 'audio')
+                and values are lists of data for that modality
+
+        Returns:
+            List of model outputs
+        """
         self.model.eval()
-        predictions = []
+        predictions: List[torch.Tensor] = []
 
         with torch.no_grad():
-            for raw_data in self.data_loader:
-                inputs = pipeline.process(raw_data)
+            for modality, raw_data in data.items():
+                if modality == "text" and isinstance(raw_data, str):
+                    inputs = self.pipeline_dict["text"].process(raw_data)
+                elif modality == "image" and isinstance(raw_data, torch.Tensor):
+                    inputs = self.pipeline_dict["image"].process([raw_data.numpy()])
+                elif modality == "audio" and isinstance(raw_data, torch.Tensor):
+                    inputs = self.pipeline_dict["audio"].process(raw_data.numpy())
+                else:
+                    raise ValueError(f"Unsupported modality or data type: {modality}")
+
                 outputs = self.model(inputs)
                 predictions.append(outputs)
 

@@ -1,70 +1,71 @@
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, List, Union
+# from dataclasses import dataclass
+# from pathlib import Path
+# from typing import Any, List, Union
 
-import numpy as np
+# import numpy as np
 
-from smse.pipelines.audio import AudioConfig, AudioPipeline
-from smse.pipelines.base import BasePipeline, PipelineConfig
-from smse.pipelines.image import ImageConfig, ImagePipeline
-from smse.types import AudioT, ImageT, VideoT
-
-
-@dataclass
-class VideoConfig(PipelineConfig):
-    fps: int = 30
-    max_frames: int = 32
-    image_config: ImageConfig = ImageConfig()
-    audio_config: AudioConfig = AudioConfig()
+# from smse.pipelines.audio import AudioConfig, AudioPipeline
+# from smse.pipelines.base import BasePipeline, PipelineConfig
+# from smse.pipelines.image import ImageConfig, ImagePipeline
+# from smse.types import AudioT, ImageT, VideoT
 
 
-# Video Pipeline
-class VideoPipeline(BasePipeline):
-    def __init__(self, config: VideoConfig):
-        super().__init__(config)
-        self.config: VideoConfig = config
-        self.image_pipeline = ImagePipeline(config.image_config)
-        self.audio_pipeline = AudioPipeline(config.audio_config)
+# @dataclass
+# class VideoConfig(PipelineConfig):
+#     fps: int = 30
+#     max_frames: int = 32
+#     image_config: ImageConfig = ImageConfig()
+#     audio_config: AudioConfig = AudioConfig()
 
-    def load(self, input_path: Union[str, Path]) -> VideoT:
-        """Load video from file"""
-        try:
-            import cv2  # type: ignore[import-not-found]
 
-            cap = cv2.VideoCapture(str(input_path))
-            frames: List[ImageT] = []
-            while len(frames) < self.config.max_frames:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                frames.append(frame)
-            cap.release()
+# # Video Pipeline
+# class VideoPipeline(BasePipeline):
+#     def __init__(self, config: VideoConfig):
+#         super().__init__(config)
+#         self.config: VideoConfig = config
+#         self.image_pipeline = ImagePipeline(config.image_config)
+#         self.audio_pipeline = AudioPipeline(config.audio_config)
 
-            # Load audio using AudioPipeline
-            audio_data: AudioT = self.audio_pipeline.load(input_path)
+#     def load(self, input_path: Union[str, Path]) -> VideoT:
+#         """Load video from file"""
+#         try:
+#             import cv2  # type: ignore[import-not-found]
 
-            return VideoT(frames=frames, audio=audio_data)
-        except ImportError:
-            raise ImportError("OpenCV is required for video processing")
+#             cap = cv2.VideoCapture(str(input_path))
+#             frames: List[ImageT] = []
+#             while len(frames) < self.config.max_frames:
+#                 ret, frame = cap.read()
+#                 if not ret:
+#                     break
+#                 frames.append(frame)
+#             cap.release()
 
-    def validate(self, data: Any) -> bool:
-        return isinstance(data, VideoT)
+#             # Load audio using AudioPipeline
+#             audio_data: AudioT = self.audio_pipeline.load(input_path)
 
-    def process(self, video_data: VideoT) -> VideoT:
-        """Preprocess video data"""
-        frames = video_data.frames
+#             return VideoT(frames=frames, audio=audio_data)
+#         except ImportError:
+#             raise ImportError("OpenCV is required for video processing")
 
-        # Sample frames if needed
-        if len(frames) > self.config.max_frames:
-            indices = np.linspace(0, len(frames) - 1, self.config.max_frames, dtype=int)
-            frames = [frames[i] for i in indices]
+#     def validate(self, data: Any) -> bool:
+#         return isinstance(data, VideoT)
 
-        # Process frames using ImagePipeline
-        processed_frames = self.image_pipeline.process(frames)
+#     def process(self, video_data: VideoT) -> VideoT:
+#         """Preprocess video data"""
+#         frames = video_data.frames
 
-        # Process audio if available
-        processed_audio = None
-        if video_data.audio is not None:
-            processed_audio = self.audio_pipeline.process(video_data.audio)
+#         # Sample frames if needed
+#         if len(frames) > self.config.max_frames:
+#             indices = np.linspace(0, len(frames) - 1,
+#                                       self.config.max_frames, dtype=int)
+#             frames = [frames[i] for i in indices]
 
-        return VideoT(frames=processed_frames, audio=processed_audio)
+#         # Process frames using ImagePipeline
+#         processed_frames = self.image_pipeline.process(frames)
+
+#         # Process audio if available
+#         processed_audio = None
+#         if video_data.audio is not None:
+#             processed_audio = self.audio_pipeline.process(video_data.audio)
+
+#         return VideoT(frames=processed_frames, audio=processed_audio)
