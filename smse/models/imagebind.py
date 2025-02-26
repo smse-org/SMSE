@@ -1,0 +1,107 @@
+from typing import Any, Dict, Optional
+
+import torch
+from torch import Tensor
+
+from smse.logging import get_logger
+from smse.models import BaseModel
+from smse.types import EmbeddingT, Modality
+
+logger = get_logger(__name__)
+
+
+class ImageBindModel(BaseModel):
+    """Wrapper for ImageBind models."""
+
+    def __init__(self, pretrained: bool = True, device: Optional[str] = None):
+        """
+        Initialize an ImageBind model.
+
+        Args:
+            pretrained: Whether to load pretrained weights
+            device: Device to use for inference (e.g., 'cuda', 'cpu')
+        """
+        from imagebind.models import imagebind_model
+        from imagebind.models.imagebind_model import ModalityType
+
+        self.device = (
+            device
+            if device is not None
+            else "cuda" if torch.cuda.is_available() else "cpu"
+        )
+        self.model = imagebind_model.imagebind_huge(pretrained=pretrained)
+        self.model.to(self.device)
+
+        # Mapping from SMSE modalities to ImageBind modalities
+        self.modality_mapping = {
+            Modality.TEXT: ModalityType.TEXT,
+            Modality.IMAGE: ModalityType.VISION,
+            Modality.AUDIO: ModalityType.AUDIO,
+        }
+        self._supported_modailities = list(self.modality_mapping.keys())
+
+    def encode(self, inputs: Dict[Modality, Any]) -> Dict[Modality, EmbeddingT]:
+        """
+        Encode inputs from different modalities into embeddings.
+
+        Args:
+            inputs: Dictionary of inputs for different modalities
+                    For example: {Modality.TEXT: ["dog", "cat"], Modality.IMAGE: ["img1.jpg", "img2.jpg"]}
+            modality: If specified, return embeddings only for this modality
+
+        Returns:
+            Dict[Modality, Tensor] or Tensor: Dictionary of embeddings for each modality or tensor for specific modality
+        """
+        from imagebind import data
+
+        # Convert inputs to ImageBind format
+        imagebind_inputs = {}
+
+        for mod, mod_inputs in inputs.items():
+            if mod not in self._supported_modailities:
+                logger.error(
+                    f"Unsupported modality {mod} for {self.__class__.__name__}"
+                )
+
+            imagebind_mod = self.modality_mapping[mod]
+
+            if mod == Modality.TEXT:
+                imagebind_inputs[imagebind_mod] = data.load_and_transform_text(
+                    mod_inputs, self.device
+                )
+            elif mod == Modality.IMAGE:
+                imagebind_inputs[imagebind_mod] = data.load_and_transform_vision_data(
+                    mod_inputs, self.device
+                )
+            elif mod == Modality.AUDIO:
+                imagebind_inputs[imagebind_mod] = data.load_and_transform_audio_data(
+                    mod_inputs, self.device
+                )
+
+        # Generate embeddings
+        with torch.no_grad():
+            imagebind_embeddings = self.model(imagebind_inputs)
+
+        # Convert back to SMSE format
+        embeddings = {
+            mod: imagebind_embeddings[self.modality_mapping[mod]]
+            for mod in inputs.keys()
+        }
+
+        return embeddings
+
+    def cross_modal_similarity(
+        self, embeddings1: Tensor, embeddings2: Tensor
+    ) -> Tensor:
+        """
+        Calculate cross-modal similarity between embeddings from different modalities.
+
+        Args:
+            embeddings1: First set of embeddings
+            embeddings2: Second set of embeddings
+
+        Returns:
+            Tensor: Softmax normalized similarity matrix
+        """
+        similarity = torch.softmax(embeddings1 @ embeddings2.T, dim=-1)
+        return similarity
