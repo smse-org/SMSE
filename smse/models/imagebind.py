@@ -4,7 +4,7 @@ import torch
 from torch import Tensor
 
 from smse.logging import get_logger
-from smse.models import BaseModel
+from smse.models.base import BaseModel
 from smse.types import EmbeddingT, Modality
 
 logger = get_logger(__name__)
@@ -21,8 +21,10 @@ class ImageBindModel(BaseModel):
             pretrained: Whether to load pretrained weights
             device: Device to use for inference (e.g., 'cuda', 'cpu')
         """
-        from imagebind.models import imagebind_model
-        from imagebind.models.imagebind_model import ModalityType
+        from imagebind.models import imagebind_model  # type: ignore[import]
+        from imagebind.models.imagebind_model import (  # type: ignore[import]
+            ModalityType,
+        )
 
         self.device = (
             device
@@ -52,7 +54,7 @@ class ImageBindModel(BaseModel):
         Returns:
             Dict[Modality, Tensor] or Tensor: Dictionary of embeddings for each modality or tensor for specific modality
         """
-        from imagebind import data
+        from imagebind import data  # type: ignore[import]
 
         # Convert inputs to ImageBind format
         imagebind_inputs = {}

@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 import torch
 
 from smse.logging import get_logger
-from smse.models import BaseModel
+from smse.models.base import BaseModel
 from smse.types import EmbeddingT, Modality
 
 logger = get_logger(__name__)
@@ -20,7 +20,7 @@ class SentenceTransformerTextModel(BaseModel):
             model_name_or_path: Name or path of a SentenceTransformer model
             device: Device to use for inference (e.g., 'cuda', 'cpu')
         """
-        from sentence_transformers import SentenceTransformer
+        from sentence_transformers import SentenceTransformer  # type: ignore[import]
 
         self.device = (
             device
@@ -40,7 +40,7 @@ class SentenceTransformerTextModel(BaseModel):
         Returns:
             Dict[Modality, Tensor]: Dictionary of text embeddings
         """
-        embeddings = {}
+        embeddings: Dict[Modality, EmbeddingT] = {}
 
         for mod, mod_inputs in inputs.items():
             if mod not in self._supported_modailities:

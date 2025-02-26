@@ -1,8 +1,8 @@
 import abc
-from ast import Dict
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 import torch
+from numpy import ndarray
 from torch import Tensor
 
 from smse.types import EmbeddingT, Modality
@@ -37,7 +37,7 @@ class BaseModel(abc.ABC):
         return self._supported_modailities
 
     def similarity(
-        self, embeddings1: Tensor, embeddings2: Optional[Tensor] = None
+        self, embeddings1: EmbeddingT, embeddings2: Optional[EmbeddingT] = None
     ) -> Tensor:
         """
         Calculate cosine similarity between embeddings.
@@ -49,12 +49,24 @@ class BaseModel(abc.ABC):
         Returns:
             Tensor: Cosine similarity matrix
         """
-        if embeddings2 is None:
-            embeddings2 = embeddings1
+
+        def to_tensor(embeddings: EmbeddingT) -> Tensor:
+            if isinstance(embeddings, list):
+                embeddings = torch.cat(embeddings, dim=0)
+            elif isinstance(embeddings, ndarray):
+                embeddings = torch.from_numpy(embeddings)
+            return embeddings
+
+        embeddings1 = to_tensor(embeddings1)
+        embeddings2 = to_tensor(embeddings2) if embeddings2 is not None else embeddings1
 
         # Normalize embeddings
         embeddings1 = embeddings1 / embeddings1.norm(dim=1, keepdim=True)
         embeddings2 = embeddings2 / embeddings2.norm(dim=1, keepdim=True)
+
+        # Check if embeddings are tensors
+        assert isinstance(embeddings1, Tensor)
+        assert isinstance(embeddings2, Tensor)
 
         # Calculate cosine similarity
         return torch.mm(embeddings1, embeddings2.T)

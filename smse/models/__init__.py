@@ -1,7 +1,5 @@
 from smse.logging import get_logger
 
-from .base import BaseModel
-
 logger = get_logger(__name__)
 
 try:
@@ -24,3 +22,10 @@ except ImportError:
         "ImageBindModel will not be available.\n"
         "Install with `poetry install --extras imagebind`"
     )
+
+
+__all__ = [
+    "ImageBindModel",
+    "SentenceTransformerTextModel",
+    "SentenceTransformerCLIPModel",
+]
