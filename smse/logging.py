@@ -4,6 +4,10 @@ import logging
 import logging.config
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 LOG_RECORD_BUILTIN_ATTRS = {
     "args",
     "asctime",
@@ -34,7 +38,46 @@ LOG_DIR = os.getenv("LOG_DIR", ".logs")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "WARNING")
 
 
-class MyJSONFormatter(logging.Formatter):
+class MultiLineFormatter(logging.Formatter):
+    """Custom formatter that properly pads multi-line messages."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        message = super().format(record)
+
+        # For multi-line messages, add padding to each line after the first
+        if "\n" in message:
+            # Split the message into lines
+            lines = message.split("\n")
+
+            # Get the prefix from the first line (everything before the actual message)
+            first_line = lines[0]
+            message_start = first_line.find(" - ")
+            if message_start >= 0:
+                prefix = " " * (message_start + 4)  # +3 for ' - '
+
+                # Add the prefix to each subsequent line
+                lines = [lines[0]] + [prefix + line for line in lines[1:]]
+
+                # Join the lines back together
+                message = "\n".join(lines)
+
+        # Align the filename at the end of the line
+        last_open_bracket = message.rfind("(")
+        if last_open_bracket != -1:
+            padding_length = (
+                80 - last_open_bracket
+            )  # Adjust 80 to your desired line length
+            if padding_length > 0:
+                message = (
+                    message[:last_open_bracket]
+                    + " " * padding_length
+                    + message[last_open_bracket:]
+                )
+
+        return message
+
+
+class JSONFormatter(logging.Formatter):
     def __init__(
         self,
         *,
@@ -83,11 +126,12 @@ LOGGING_CONFIG = {
     "disable_existing_loggers": False,
     "formatters": {
         "simple": {
-            "format": "[%(asctime)s] [%(levelname)8s] -  %(message)s (%(name)s:%(filename)s:%(lineno)s)",  # noqa: E501
+            "()": "smse.logging.MultiLineFormatter",
+            "format": "[%(asctime)s] [%(levelname)8s] -  %(message)s (%(filename)s:%(lineno)s)",  # noqa: E501
             "datefmt": "%Y-%m-%dT%H:%M:%S%z",
         },
         "json": {
-            "()": "smse.logging.MyJSONFormatter",
+            "()": "smse.logging.JSONFormatter",
             "fmt_keys": {
                 "level": "levelname",
                 "message": "message",
@@ -115,11 +159,6 @@ LOGGING_CONFIG = {
             "maxBytes": 1024 * 1024 * 10,  # 10 MB
             "backupCount": 3,
         },
-        # "queue_handler": {
-        #     "class": "logging.handlers.QueueHandler",
-        #     "handlers": ["stdout", "file_json"],
-        #     "respect_handler_level": True,
-        # },
     },
     "loggers": {"root": {"level": "DEBUG", "handlers": ["stdout", "file_json"]}},
 }
@@ -130,11 +169,6 @@ def setup_logging() -> None:
         os.makedirs(LOG_DIR)
 
     logging.config.dictConfig(LOGGING_CONFIG)
-
-    # queue_handler = logging.getHandlerByName("queue_handler")
-    # if queue_handler is not None:
-    #     queue_handler.listener.start()
-    #     atexit.register(queue_handler.listener.stop)
 
 
 def get_logger(name: str) -> logging.Logger:
