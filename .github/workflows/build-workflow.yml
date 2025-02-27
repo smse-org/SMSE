@@ -50,7 +50,7 @@ jobs:
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Install the project dependencies
-      run: poetry install
+      run: poetry install --with dev --extras all
 
     - name: Build the project
       run: |

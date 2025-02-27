@@ -40,7 +40,7 @@ jobs:
           key: ${{ runner.os }}-venv-${{ hashFiles('poetry.lock') }}
 
       - name: Install the project dependencies
-        run: poetry install --with dev,audio,vision
+        run: poetry install --with dev --extras all
 
       - name: Run mypy
         run: |
