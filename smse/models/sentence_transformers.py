@@ -47,8 +47,7 @@ class SentenceTransformerTextModel(BaseModel):
                 logger.error(
                     f"Unsupported modality {mod} for {self.__class__.__name__}"
                 )
-
-            if mod == Modality.TEXT:
+            else:
                 embeddings[mod] = self.model.encode(mod_inputs, convert_to_tensor=True)
 
         return embeddings

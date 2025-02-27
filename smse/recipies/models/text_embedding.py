@@ -5,7 +5,7 @@ from smse.types import Modality
 logger = get_logger(__name__)
 
 
-def sentence_transformer_example() -> None:
+def text_embedding_st_example() -> None:
     """Example of using a SentenceTransformer model."""
     logger.info("=== SentenceTransformer Example ===")
 
@@ -26,7 +26,3 @@ def sentence_transformer_example() -> None:
     # Calculate similarity
     similarities = model.similarity(embeddings)
     logger.info(f"Similarities:\n{similarities}")
-
-
-if __name__ == "__main__":
-    sentence_transformer_example()
