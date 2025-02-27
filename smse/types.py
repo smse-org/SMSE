@@ -1,19 +1,32 @@
 from dataclasses import dataclass
-from typing import List
+from enum import Enum, auto
+from typing import Any, List
 
 import numpy as np
+import torch
 from numpy.typing import NDArray
 from PIL import Image
+from torch import Tensor
 
-AudioArrayT = NDArray[np.float32]
-ImageT = NDArray[np.float64 | np.uint8] | Image.Image
+
+class Modality(Enum):
+    """Supported modalities in the SMSE framework."""
+
+    TEXT = auto()
+    IMAGE = auto()
+    AUDIO = auto()
+    VIDEO = auto()
+
+
+ImageT = NDArray[np.float64 | np.uint8] | Image.Image | torch.Tensor
 TextT = str
+EmbeddingT = List[Tensor] | NDArray[Any] | Tensor
 
 
 @dataclass
 class AudioT:
-    audio: AudioArrayT
-    sample_rate: int
+    audio: List[torch.Tensor]
+    sampling_rate: int
 
 
 @dataclass

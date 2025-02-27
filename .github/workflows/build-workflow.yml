@@ -31,6 +31,12 @@ jobs:
       run: |
         poetry config virtualenvs.create true --local
         poetry config virtualenvs.in-project true --local
+
+    - name: Cache the virtual environment
+      uses: actions/cache@v3
+      with:
+        path: ./.venv
+        key: ${{ runner.os }}-venv-${{ hashFiles('poetry.lock') }}
     
     - name: Get package version
       id: get_version
@@ -43,14 +49,8 @@ jobs:
         fi
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-    - name: Define a cache for the virtual environment based on the dependencies lock file
-      uses: actions/cache@v3
-      with:
-        path: ./.venv
-        key: venv-${{ hashFiles('poetry.lock') }}
-
     - name: Install the project dependencies
-      run: poetry install
+      run: poetry install --with dev --extras all
 
     - name: Build the project
       run: |
@@ -61,7 +61,7 @@ jobs:
           # Get the original name without extension
           base=$(basename "$wheel" .whl)
           # Rename to indicate Python version compatibility
-          mv "$wheel" "dist/${base}-py${{ matrix.python-version }}.whl"
+          mv "$wheel" "dist/smse-${{ steps.get_version.outputs.version }}-linx-x86_64.whl"
         done
         
     - name: Upload build artifacts

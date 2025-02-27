@@ -6,19 +6,36 @@ authors = ["Ahmedsaed <ahmedsaed2652003@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
+[tool.poetry.scripts]
+smse = "smse.cli:main"
+
 [tool.poetry.dependencies]
-python = "^3.10"
-numpy = "^2.1.3"
+python = ">=3.10,<3.13"
+numpy = "^1.26.4"
+torch = "^2.5.1"
+torchaudio = {version = "^2.5.1", optional = true}
+torchvision = {version = "^0.20.1", optional = true}
+sentence-transformers = { version = "^2.2.2", optional = true }
+imagebind = { git = "https://github.com/Ahmedsaed/ImageBind.git", optional = true }
+python-dotenv = "^1.0.1"
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
+types-pillow = "^10.2.0.20240822"
 mypy = "^1.13.0"
 black = "^24.10.0"
 isort = "^5.13.2"
 flake8 = "7.0.0"
 pytest = "^8.3.3"
+
+[tool.poetry.extras]
+vision = ["torchvision"]
+audio = ["torchaudio"]
+sentence-transformers = ["sentence-transformers", "timm"]
+imagebind = ["imagebind"]
+all = ["torchvision", "torchaudio", "sentence-transformers", "imagebind"]
 
 [build-system]
 requires = ["poetry-core"]
@@ -44,6 +61,3 @@ strict = true
 enable_error_code = "possibly-undefined,redundant-expr,truthy-bool,truthy-iterable"
 warn_unused_configs = false
 warn_unused_ignores = false
-
-[tool.poetry.scripts]
-smse = "smse.cli:main"

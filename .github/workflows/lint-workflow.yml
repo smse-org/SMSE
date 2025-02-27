@@ -23,28 +23,41 @@ jobs:
         with:
           python-version: ${{ inputs.py }}
 
-      - name: Install dependencies
+      - name: Setup Poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: 'latest'
+
+      - name: Setup a local virtual environment
         run: |
-          python -m pip install --upgrade pip
-          pip install mypy flake8 black isort
-          pip install .
+          poetry config virtualenvs.create true --local
+          poetry config virtualenvs.in-project true --local
+
+      - name: Cache the virtual environment
+        uses: actions/cache@v3
+        with:
+          path: ./.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('poetry.lock') }}
+
+      - name: Install the project dependencies
+        run: poetry install --with dev --extras all
 
       - name: Run mypy
         run: |
-          mypy --install-types --non-interactive .
+          poetry run mypy --install-types --non-interactive .
         continue-on-error: false
 
       - name: Run flake8
         run: |
-          flake8 .
+          poetry run flake8 .
         continue-on-error: false
 
       - name: Run black
         run: |
-          black --check .
+          poetry run black --check .
         continue-on-error: false
 
       - name: Run isort
         run: |
-          isort . --check-only
+          poetry run isort . --check-only
         continue-on-error: false

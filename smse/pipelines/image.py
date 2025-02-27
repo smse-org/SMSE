@@ -9,12 +9,12 @@ from torchvision import transforms  # type: ignore[import-untyped]
 from torchvision.io import read_image  # type: ignore[import-untyped]
 from torchvision.transforms import functional as F  # type: ignore[import-untyped]
 
-from smse.pipelines.base import BasePipeline, PipelineConfig
+from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import ImageT
 
 
 @dataclass
-class ImageConfig(PipelineConfig):
+class ImageConfig(BaseConfig):
     """
     Configuration for processing image in a pipeline
 

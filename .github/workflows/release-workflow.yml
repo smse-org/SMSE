@@ -33,9 +33,9 @@ jobs:
       py: ${{ matrix.py }}
 
   release:
+    needs: build-wheel
     permissions: write-all
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
     steps:
     - uses: actions/checkout@v4
@@ -62,18 +62,17 @@ jobs:
       id: release_notes
       run: |
         cat << EOF > release_notes.md
-        # Release v${{ steps.get_version.outputs.version }}
         
         ## Installation Instructions
         
         Install the latest version:
         \`\`\`bash
-        pip install "${{ github.event.repository.name }} @ https://github.com/${{ github.repository }}/releases/latest/download/${{ github.event.repository.name }}-${{ steps.get_version.outputs.version }}-py3-none-any.whl"
+        pip install "${{ github.event.repository.name }} @ https://github.com/${{ github.repository }}/releases/latest/download/smse-${{ steps.get_version.outputs.version }}-linx-x86_64.whl"
         \`\`\`
         
         Install this specific version:
         \`\`\`bash
-        pip install "${{ github.event.repository.name }} @ https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/${{ github.event.repository.name }}-${{ steps.get_version.outputs.version }}-py3-none-any.whl"
+        pip install "${{ github.event.repository.name }} @ https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/smse-${{ steps.get_version.outputs.version }}-linx-x86_64.whl"
         \`\`\`
         
         ## Available Python Versions
@@ -82,27 +81,18 @@ jobs:
         - Python 3.11
         - Python 3.12
         - Python 3.13
-        
-        ## What's New
-        <!-- Add release notes here -->
+
         EOF
-        
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ steps.get_version.outputs.version }}
-        release_name: Release v${{ steps.get_version.outputs.version }}
-        body_path: release_notes.md
-        draft: true
-        prerelease: false
         
     - name: Upload Release Assets
       uses: softprops/action-gh-release@v1
       with:
         files: combined-dist/*
-        tag_name: v${{ github.run_number }}
+        tag_name: v${{ steps.get_version.outputs.version }}
+        name: Release v${{ steps.get_version.outputs.version }}
+        body_path: release_notes.md
+        generate_release_notes: true
+        draft: true
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
