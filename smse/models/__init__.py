@@ -3,10 +3,7 @@ from smse.logging import get_logger
 logger = get_logger(__name__)
 
 try:
-    from .sentence_transformers import (
-        SentenceTransformerCLIPModel,
-        SentenceTransformerTextModel,
-    )
+    from .st_models import SentenceTransformerCLIPModel, SentenceTransformerTextModel
 except ImportError:
     logger.warning(
         "SentenceTransformer is not installed. "
@@ -15,7 +12,7 @@ except ImportError:
     )
 
 try:
-    from .imagebind import ImageBindModel
+    from .imagebind_models import ImageBindModel
 except ImportError:
     logger.warning(
         "ImageBind is not installed. "

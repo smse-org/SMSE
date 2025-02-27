@@ -3,6 +3,7 @@ import json
 import logging
 import logging.config
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -40,7 +41,7 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "WARNING")
 class MultiLineFormatter(logging.Formatter):
     """Custom formatter that properly pads multi-line messages."""
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         message = super().format(record)
 
         # For multi-line messages, add padding to each line after the first
