@@ -1,8 +1,8 @@
 from smse.logging import get_logger
-from smse.recipies.models.st_models import sentence_transformer_example
+from smse.recipies.models.imagebind_embedding import imagebind_embedding_example
 
 logger = get_logger(__name__)
 
 
 def main() -> None:
-    sentence_transformer_example()
+    imagebind_embedding_example()

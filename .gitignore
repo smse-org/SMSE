@@ -18,3 +18,5 @@
 .venv
 .logs
 .env
+.assets
+.checkpoints
