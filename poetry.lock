@@ -690,7 +690,7 @@ mayavi = "*"
 numpy = ">=1.19"
 pytorchvideo = {git = "https://github.com/facebookresearch/pytorchvideo.git", rev = "6cdc929315aab1b5674b6dcf73b16ec99147735f"}
 regex = "*"
-timm = "0.6.7"
+timm = "*"
 torch = ">=2.0.0"
 torchaudio = "*"
 torchvision = "*"
@@ -700,7 +700,7 @@ types-regex = "*"
 type = "git"
 url = "https://github.com/Ahmedsaed/ImageBind.git"
 reference = "HEAD"
-resolved_reference = "80d074583850e3085a75aea85b29bd7d5c6bd33d"
+resolved_reference = "44ea001f5296006958bb3a36f9575200961f19e2"
 
 [[package]]
 name = "iniconfig"
@@ -1668,6 +1668,20 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "python-dotenv"
+version = "1.0.1"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "python-dotenv-1.0.1.tar.gz", hash = "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca"},
+    {file = "python_dotenv-1.0.1-py3-none-any.whl", hash = "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a"},
+]
+
+[package.extras]
+cli = ["click (>=5.0)"]
+
+[[package]]
 name = "pytorchvideo"
 version = "0.1.5"
 description = "A video understanding deep learning library."
@@ -2232,17 +2246,20 @@ files = [
 
 [[package]]
 name = "timm"
-version = "0.6.7"
-description = "(Unofficial) PyTorch Image Models"
+version = "1.0.15"
+description = "PyTorch Image Models"
 optional = true
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "timm-0.6.7-py3-none-any.whl", hash = "sha256:4bbd7a5c9ae462ec7fec3d99ffc62ac2012010d755248e3de778d50bce5f6186"},
-    {file = "timm-0.6.7.tar.gz", hash = "sha256:340f907906695092cf53fe01a476aa14ad15763545b654bc122ea0daef23071f"},
+    {file = "timm-1.0.15-py3-none-any.whl", hash = "sha256:5a3dc460c24e322ecc7fd1f3e3eb112423ddee320cb059cc1956fbc9731748ef"},
+    {file = "timm-1.0.15.tar.gz", hash = "sha256:756a3bc30c96565f056e608a9b559daed904617eaadb6be536f96874879b1055"},
 ]
 
 [package.dependencies]
-torch = ">=1.4"
+huggingface_hub = "*"
+pyyaml = "*"
+safetensors = "*"
+torch = "*"
 torchvision = "*"
 
 [[package]]
@@ -2758,4 +2775,4 @@ vision = ["torchvision"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "5616261ed11f57575b52a3186030651659664985fda98f1ae718c0898c7a7422"
+content-hash = "81208d13f194d0a48d396af3934288b92b798251e1985b6b06a70f5710f71111"
