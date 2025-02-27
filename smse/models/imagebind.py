@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional
 
 import torch
+from numpy import ndarray
 from torch import Tensor
 
 from smse.logging import get_logger
@@ -93,7 +94,7 @@ class ImageBindModel(BaseModel):
         return embeddings
 
     def cross_modal_similarity(
-        self, embeddings1: Tensor, embeddings2: Tensor
+        self, embeddings1: EmbeddingT, embeddings2: Optional[EmbeddingT] = None
     ) -> Tensor:
         """
         Calculate cross-modal similarity between embeddings from different modalities.
@@ -105,5 +106,16 @@ class ImageBindModel(BaseModel):
         Returns:
             Tensor: Softmax normalized similarity matrix
         """
+
+        def to_tensor(embeddings: EmbeddingT) -> Tensor:
+            if isinstance(embeddings, list):
+                embeddings = torch.cat(embeddings, dim=0)
+            elif isinstance(embeddings, ndarray):
+                embeddings = torch.from_numpy(embeddings)
+            return embeddings
+
+        embeddings1 = to_tensor(embeddings1)
+        embeddings2 = to_tensor(embeddings2) if embeddings2 is not None else embeddings1
+
         similarity = torch.softmax(embeddings1 @ embeddings2.T, dim=-1)
         return similarity
