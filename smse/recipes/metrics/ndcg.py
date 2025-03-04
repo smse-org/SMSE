@@ -1,5 +1,4 @@
 from smse.benchmarks.metric import Metric
-from sklearn.metrics import ndcg_score
 from typing import Dict
 
 import numpy as np
@@ -17,11 +16,20 @@ class NDCG(Metric):
         Calculate NDCG@k.
 
         Args:
-            y_target: relevance scores for each items
-            y_pred: predicted scores
+            y_target: relevance scores for each item
+            y_pred: predict scores or rankings
 
         Returns:
-            Dict with NDCG scores
+            Dict with Top-N accuracy score
         """
-        score = ndcg_score(y_target, y_pred, k=self.k)
-        return {self.name: score}
+        # Get top n predictions for each query
+        top_k_indicies = np.argsort(-y_pred, axis = 1)[:, :self.k]
+
+        # Check if any relevant items are in top n
+        hits = 0
+        for i, (true, indices) in enumerate(zip(y_target, top_k_indicies)):
+            if np.sum(true[indices]) > 0:
+                hits += 1
+
+        accuracy = hits / len(y_target) if len(y_target) > 0 else 0.0
+        return {self.name: accuracy}

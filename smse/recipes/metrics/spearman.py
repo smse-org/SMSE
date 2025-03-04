@@ -21,8 +21,8 @@ class SpearmanCorrelation(Metric):
         Returns:
             Dict with Spearman correlation coefficient
         """
-        if np.std(y_target) == 0 or np.std(y_pred) == 0:
+        if np.std(y_target.cpu().numpy()) == 0 or np.std(y_pred.cpu().numpy()) == 0:
             return {self.name: 0.0}
 
-        corr = spearmanr(y_target, y_pred)[0]
-        return {self.name: corr if not np.isnan(corr) else 0.0}
+        corr, _ = spearmanr(y_target, y_pred)
+        return {self.name: corr if not np.isnan(corr).any() else 0.0}
