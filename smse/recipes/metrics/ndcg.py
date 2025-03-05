@@ -1,35 +1,43 @@
-from smse.benchmarks.metric import Metric
-from typing import Dict
+from typing import Any
 
-import numpy as np
+from torch import Tensor
+
+from smse.benchmarks.metric import Metric
+
 
 class NDCG(Metric):
     """Normalized Discounted Cumulative Gain metric implementation"""
 
-    def __init__(self, k: int = 10, name: str = None):
-        name = f"NDCG@{k}" if name is None else name
-        super().__init__(name)
-        self.k = k
+    def __init__(self, k: int = 3):
+        """
+        Initialize NDCG Metric.
 
-    def compute(self, y_target: np.ndarray, y_pred: np.ndarray, **kwargs) -> Dict[str, float]:
+        Args:
+            k: Top ranks to consider
+        """
+        super().__init__(k, f"NDCG@{k}")
+
+    def compute(
+        self, predictions: Tensor, ground_truth: Tensor, indexes: Tensor, **kwargs: Any
+    ) -> Tensor:
         """
         Calculate NDCG@k.
 
         Args:
-            y_target: relevance scores for each item
-            y_pred: predict scores or rankings
-
+            predictions: predict scores or rankings
+            ground_truth: relevance scores / reference scores
+            indexes: indices of matrix
+            **kwargs: additional parameters
         Returns:
-            Dict with Top-N accuracy score
+            Tensor
         """
-        # Get top n predictions for each query
-        top_k_indicies = np.argsort(-y_pred, axis = 1)[:, :self.k]
+        try:
+            from torchmetrics.retrieval import RetrievalNormalizedDCG
+        except ImportError:
+            raise ImportError(
+                "torchmetrics is not installed. Please install it using 'pip install torchmetrics'."
+            )
 
-        # Check if any relevant items are in top n
-        hits = 0
-        for i, (true, indices) in enumerate(zip(y_target, top_k_indicies)):
-            if np.sum(true[indices]) > 0:
-                hits += 1
-
-        accuracy = hits / len(y_target) if len(y_target) > 0 else 0.0
-        return {self.name: accuracy}
+        metric = RetrievalNormalizedDCG(top_k=self.k)
+        score: Tensor = metric(predictions, ground_truth, indexes)
+        return score

@@ -1,13 +1,15 @@
-# from dataclasses import dataclass
+from dataclasses import dataclass
+
+from smse.pipelines.audio import AudioConfig
+from smse.pipelines.base import BaseConfig
+from smse.pipelines.image import ImageConfig
+
+# from smse.types import AudioT, ImageT, VideoT
+
 # from pathlib import Path
 # from typing import Any, List, Union
 
 # import numpy as np
-
-from smse.pipelines.audio import AudioConfig, AudioPipeline
-from smse.pipelines.base import BaseConfig, BasePipeline
-from smse.pipelines.image import ImageConfig, ImagePipeline
-from smse.types import AudioT, ImageT, VideoT
 
 
 @dataclass
@@ -68,4 +70,4 @@ class VideoConfig(BaseConfig):
 #         if video_data.audio is not None:
 #             processed_audio = self.audio_pipeline.process(video_data.audio)
 
-        return VideoT(frames=[processed_frames], audio=processed_audio)
+#        return VideoT(frames=[processed_frames], audio=processed_audio)

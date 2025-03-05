@@ -5,23 +5,23 @@ from torch import Tensor
 from smse.benchmarks.metric import Metric
 
 
-class MRR(Metric):
-    """Mean Reciprocal Rank Metric Implementation"""
+class Precision(Metric):
+    """Precision Metric Implementation"""
 
     def __init__(self, k: int = 1):
         """
-        Initialize MRR Metric.
+        Initialize Precision Metric.
 
         Args:
             k: Top ranks to consider.
         """
-        super().__init__(k, f"MRR@{k}")
+        super().__init__(k, f"Precision@{k}")
 
     def compute(
         self, predictions: Tensor, ground_truth: Tensor, indexes: Tensor, **kwargs: Any
     ) -> Tensor:
         """
-        Calculate Mean Reciprocal Rank
+        Calculate Precision Metric
 
         Args:
             predictions: predict scores or rankings
@@ -32,12 +32,12 @@ class MRR(Metric):
             torch.Tensor: tensor with score of efficiency
         """
         try:
-            from torchmetrics.retrieval import RetrievalMRR
+            from torchmetrics.retrieval import RetrievalPrecision
         except ImportError:
             raise ImportError(
                 "torchmetrics is not installed. Please install it using 'pip install torchmetrics'."
             )
 
-        metric = RetrievalMRR(top_k=self.k)
+        metric = RetrievalPrecision(top_k=self.k)
         score: Tensor = metric(predictions, ground_truth, indexes)
         return score

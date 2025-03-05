@@ -1,40 +1,42 @@
-from smse.benchmarks.metric import Metric
-from typing import Dict
+from typing import Any
 
-import numpy as np
+from torch import Tensor
+
+from smse.benchmarks.metric import Metric
+
 
 class Recall(Metric):
     """Recall metric implementation"""
 
-    def __init__(self, k: int = 10, name: str = None):
-        name = f"Recall@{k}" if name is None else name
-        super().__init__(name)
-        self.k = k
+    def __init__(self, k: int = 1):
+        """Initialize Recall Metric.
 
-    def compute(self, y_target: np.ndarray, y_pred: np.ndarray, **kwargs) -> Dict[str, float]:
+        Args:
+            k: Top ranks to consider.
+        """
+        super().__init__(k, f"Recall@{k}")
+
+    def compute(
+        self, predictions: Tensor, ground_truth: Tensor, indexes: Tensor, **kwargs: Any
+    ) -> Tensor:
         """
         Calculate Recall@k.
 
         Args:
-            y_target: binary relevance labels (1 for relevant, 0 for irrelevant)
-            y_pred: predict scores or rankings
-
+            predictions: predict scores or rankings
+            ground_truth: relevance scores / reference scores
+            indexes: indices of matrix
+            **kwargs: additional parameters
         Returns:
-            Dict with recall score
+            Tensor
         """
-        # Get top n predictions for each query
-        top_k_indicies = np.argsort(-y_pred, axis = 1)[:, :self.k]
+        try:
+            from torchmetrics.retrieval import RetrievalRecall
+        except ImportError:
+            raise ImportError(
+                "torchmetrics is not installed. Please install it using 'pip install torchmetrics'."
+            )
 
-        recall_vals = []
-        for i, (true, indices) in enumerate(zip(y_target, top_k_indicies)):
-            # Number of relevant items in top k
-            n_relevant_in_top_k = np.sum(true[indices])
-            n_relevant = np.sum(true)
-
-            if n_relevant > 0:
-                recall_vals.append(n_relevant_in_top_k / n_relevant)
-            else:
-                recall_vals.append(1.0) # Perfect recall if no relevant items
-
-        avg_recall = np.mean(recall_vals) if len(recall_vals) > 0 else 0.0
-        return {self.name: avg_recall}
+        metric = RetrievalRecall(top_k=self.k)
+        score: Tensor = metric(predictions, ground_truth, indexes)
+        return score

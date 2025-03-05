@@ -1,8 +1,10 @@
+from typing import Any, Dict, List
+
+import torch
+
 from smse.benchmarks.metric import Metric
 from smse.types import Modality
-from typing import Dict, List, Any
 
-import numpy as np
 
 class TextEvaluator:
     """Evaluation framework for text models."""
@@ -17,81 +19,75 @@ class TextEvaluator:
         """
         self.model = model
         self.metrics = metrics
-        self.results = {}
 
-    def cosine_to_relevance_quantiles(similarites, bin=4):
+    def cosine_to_rankings(self, similarity_matrix: torch.Tensor) -> torch.Tensor:
         """
-        Converts cosine similarity matrix to relevance quantiles so it can be used
-        as predictions for comparison.
+        Converts a cosine similarity matrix into ranking-based relevance scores
+        while keeping the original positions.
+
+        For each query (row), the most similar document gets rank 1, the second most similar gets rank 2, and so on.
 
         Args:
-            similarities: the cosine similarity matrix to be converted.
-            bin: number of bins to convert to.
+            similarity_matrix (torch.Tensor): The cosine similarity matrix (queries x documents).
         Returns:
-            relevance_scores: similarity matrix converted to prediction.
+            torch.Tensor: A tensor with the same shape as similarity_matrix, where each entry represents the rank
+                        of the corresponding document for that query.
         """
-        flattened = similarites.flatten() # Flatten to get all values
-        thresholds = np.percentile(flattened, np.linspace(0, 100, bins+1))
+        rankings = similarity_matrix.argsort(
+            dim=1, descending=True
+        )  # Get sorted indices
+        ranked_matrix = torch.zeros_like(
+            rankings, dtype=torch.float
+        )  # Initialize result tensor
 
-        relevance_scores = np.digitize(similarites, thresholds, right=True) - 1
-        return relevance_scores
+        # Assign ranks while keeping original document positions
+        for i in range(rankings.shape[0]):
+            ranked_matrix[i, rankings[i]] = torch.arange(
+                1, rankings.shape[1] + 1, dtype=torch.float
+            )
 
-    def create_ground_truth(self, dataset: List[tuple[str, str]]) -> np.ndarray:
-        """
-        Converts dataset into a ground truth table, for each query its corresponding 
-        correct answer marked as 1, otherwise 0.
+        return ranked_matrix
 
-        Args:
-            dataset: the dataset holding for each query its corresponding answer.
-        Returns:
-            ground_truth: ground truth table constructed from dataset
-        """
-        queries = list(set(q for q, _ in dataset))
-        answers = list(set(a for _, a in dataset))
-
-        query_to_index = {q: i for i, q in enumerate(queries)}
-        ans_to_index = {d: i for i, d in enumerate(answers)}
-
-        ground_truth = np.zeros((len(queries), len(answers)))
-
-        for query, answer in dataset:
-            q_idx = query_to_index[query]
-            a_idx = ans_to_index[answer]
-            ground_truth[q_idx, a_idx] = 1
-
-        return ground_truth
-
-    def run(self, dataset: List[tuple[str, str]], **kwargs):
+    def run(
+        self, dataset: List[tuple[str, str]], **kwargs: Any
+    ) -> Dict[str, torch.Tensor]:
         """
         Run evaluation using specificed metrics
 
         Args:
             dataset: the dataset holding for each query its corresponding answer.
             **kwargs: Additional parameters for metrics
+        Returns:
+            results
         """
-        ground_truth = self.create_ground_truth(dataset)
+        ground_truth = torch.eye(len(dataset))
 
-        queries, relevant_answers = zip(*dataset)
-        queries = list(queries)
-        relevant_answers = list(relevant_answers)
+        queries_raw, relevant_answers_raw = zip(*dataset)
+        queries = list(queries_raw)
+        relevant_answers = list(relevant_answers_raw)
 
-        queries = self.model.encode({Modality.TEXT: queries})[Modality.TEXT]
-        relevant_answers = self.model.encode({Modality.TEXT: queries})[Modality.TEXT]
+        queries_embedded = self.model.encode({Modality.TEXT: queries})[Modality.TEXT]
+        relevant_answers_embedded = self.model.encode(
+            {Modality.TEXT: relevant_answers}
+        )[Modality.TEXT]
 
-        similarity_matrix = self.model.similarity(queries, relevant_answers)
-        predictions = self.cosine_to_relevance_quantiles(similarity_matrix)
+        similarity_matrix = self.model.similarity(
+            queries_embedded, relevant_answers_embedded
+        )
+        num_queries, num_docs = similarity_matrix.shape
+        indexes = torch.arange(num_docs).repeat(
+            num_queries, 1
+        )  # Ensure each row contains proper document indices
+
+        results = {}
 
         for metric in self.metrics:
-            metric_res = metric.compute(ground_truth, predictions, **kwargs)
-            if metric_res is not None:
-                self.results.update(metric_res)
-            else:
-                print("Metric computation fault")
+            try:
+                metric_res = metric.compute(
+                    similarity_matrix, ground_truth, indexes, **kwargs
+                )
+            except Exception as e:
+                raise RuntimeError(f"Error comupting metric {metric.name}: {e}") from e
+            results[metric.name] = metric_res
 
-    def get_results(self) -> Dict[str, float]:
-        """Get evaluation results
-
-        Returns:
-            Dict of metric names and values
-        """
-        return self.results
+        return results

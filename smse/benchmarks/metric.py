@@ -1,23 +1,35 @@
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Any
 
-import numpy as np
+from torch import Tensor
+
 
 class Metric(ABC):
     """Abstract base class for evaluation metrics."""
 
-    def __init__(self, name: str):
+    def __init__(self, k: int, name: str):
+        """
+        Initialize metric.
+
+        Args:
+            k: Top ranks to consider.
+            name: Name of the metric.
+        """
+        self.k = k
         self.name = name
 
     @abstractmethod
-    def compute(self, y_target: np.ndarray, y_pred: np.ndarray, **kwargs) -> Dict[str, float]:
+    def compute(
+        self, predictions: Tensor, ground_truth: Tensor, indexes: Tensor, **kwargs: Any
+    ) -> Tensor:
         """
         Calculate the metric value based on targets and predictions
 
         Args:
-            y_target: relevance scores / reference scores
-            y_pred: predict scores or rankings
-
+            predictions: predict scores or rankings
+            ground_truth: relevance scores / reference scores
+            indexes: indexes of the samples
+            **kwargs: additional parameters
         Returns:
             Dict containing metric name and value
         """
