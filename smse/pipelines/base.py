@@ -26,19 +26,11 @@ class BasePipeline(ABC):
         """Preprocess loaded data"""
         pass
 
-    @abstractmethod
-    def validate(self, data: Any) -> bool:
-        """Validate data format and content"""
-        pass
-
     def __call__(self, input_data: Union[Path, Any]) -> Any:
         """Main pipeline execution"""
         if isinstance(input_data, Path):
             data = self.load(input_data)
         else:
             data = input_data
-
-        if not self.validate(data):
-            raise ValueError(f"Invalid data format for {self.__class__.__name__}")
 
         return self.process(data)

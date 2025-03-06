@@ -43,19 +43,6 @@ def multiple_images_processing() -> None:
     )
 
 
-def image_validation() -> None:
-    config = ImageConfig()
-    pipeline = ImagePipeline(config)
-
-    # Create a sample image as a NumPy array
-    sample_image = np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8)
-
-    # Validate the image
-    is_valid = pipeline.validate(sample_image)
-
-    assert is_valid
-
-
 def custom_config_image_processing() -> None:
     config = ImageConfig(target_size=(128, 128), color_mode="L", normalize=False)
     pipeline = ImagePipeline(config)
@@ -74,3 +61,23 @@ def custom_config_image_processing() -> None:
         128,
         128,
     )  # Assuming custom target size and grayscale
+
+
+def center_crop_image_processing() -> None:
+    config = ImageConfig(target_size=(128, 128), center_crop=128)
+    pipeline = ImagePipeline(config)
+
+    # Path to a sample image
+    image_path = Path(".assets/images/bird_image.jpg")
+
+    # Load and process the image
+    image = pipeline.load(image_path)
+    processed_image = pipeline.process([image])
+
+    assert isinstance(processed_image, torch.Tensor)
+    assert processed_image.shape == (
+        1,
+        3,
+        128,
+        128,
+    )  # Assuming custom target size and center crop

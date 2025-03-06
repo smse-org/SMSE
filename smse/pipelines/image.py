@@ -132,6 +132,3 @@ class ImagePipeline(BasePipeline):
         processed_images = [self.transform_pipeline(image) for image in images]
 
         return torch.stack(processed_images).to(device)
-
-    def validate(self, data: Any) -> bool:
-        return isinstance(data, np.ndarray) and len(data.shape) in [2, 3]
