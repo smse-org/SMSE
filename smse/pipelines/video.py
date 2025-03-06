@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, List, Union
 
@@ -14,8 +14,8 @@ from smse.types import AudioT, ImageT, VideoT
 class VideoConfig(BaseConfig):
     fps: int = 30
     max_frames: int = 32
-    image_config: ImageConfig = ImageConfig()
-    audio_config: AudioConfig = AudioConfig()
+    image_config: ImageConfig = field(default_factory=ImageConfig)
+    audio_config: AudioConfig = field(default_factory=AudioConfig)
 
 
 # Video Pipeline
