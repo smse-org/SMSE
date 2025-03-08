@@ -1,6 +1,8 @@
-from smse.pipelines.image import ImageConfig, ImagePipeline
 from pathlib import Path
+
 import torch
+
+from smse.pipelines.image import ImageConfig, ImagePipeline
 
 
 def single_image_processing() -> None:

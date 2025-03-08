@@ -1,9 +1,11 @@
 from typing import Type
+
 import numpy as np
 import torch
 from PIL import Image
-from smse.types import EmbeddingT, ImageT
 from torchvision.transforms import functional as F  # type: ignore[import-untyped]
+
+from smse.types import EmbeddingT, ImageT
 
 
 # Image transformations
