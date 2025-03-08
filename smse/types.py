@@ -33,3 +33,4 @@ class AudioT:
 class VideoT:
     frames: List[ImageT]
     audio: AudioT
+    fps: float
