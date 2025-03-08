@@ -1,5 +1,6 @@
 from smse.logging import get_logger
 from smse.models import ImageBindModel
+from smse.pipelines.image import ImageConfig, ImagePipeline
 from smse.types import Modality
 
 logger = get_logger(__name__)
@@ -11,13 +12,13 @@ def imagebind_embedding_example() -> None:
     model = ImageBindModel()
 
     # Inputs for different modalities
-    images = [
+    image_paths = [
         ".assets/images/bird_image.jpg",
         ".assets/images/car_image.jpg",
         ".assets/images/dog_image.jpg",
     ]
 
-    audio = [
+    audio_paths = [
         ".assets/audio/bird_audio.wav",
         ".assets/audio/car_audio.wav",
         ".assets/audio/dog_audio.wav",
@@ -29,7 +30,25 @@ def imagebind_embedding_example() -> None:
         "a dog",
     ]
 
-    inputs = {Modality.IMAGE: images, Modality.TEXT: sentences, Modality.AUDIO: audio}
+    image_pipeline = ImagePipeline(
+        ImageConfig(
+            target_size=(224, 224),
+            center_crop=224,
+            normalize=True,
+            mean=(0.48145466, 0.4578275, 0.40821073),
+            std=(0.26862954, 0.26130258, 0.27577711),
+        )
+    )
+
+    # Load and process images
+    raw_images = [image_pipeline.load(image) for image in image_paths]
+    images = image_pipeline.process(raw_images)
+
+    inputs = {
+        Modality.IMAGE: images,
+        Modality.TEXT: sentences,
+        Modality.AUDIO: audio_paths,
+    }
 
     # Encode inputs into embeddings
     embeddings = model.encode(inputs)
