@@ -41,11 +41,10 @@ def imagebind_embedding_example() -> None:
     )
 
     # Load and process images
-    raw_images = [image_pipeline.load(image) for image in image_paths]
-    images = image_pipeline.process(raw_images)
+    processed_images = image_pipeline(image_paths)
 
     inputs = {
-        Modality.IMAGE: images,
+        Modality.IMAGE: processed_images,
         Modality.TEXT: sentences,
         Modality.AUDIO: audio_paths,
     }
