@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, List, Union
+from typing import Any, List, Sequence, Union
 
 import numpy as np
 
@@ -26,26 +26,39 @@ class VideoPipeline(BasePipeline):
         self.image_pipeline = ImagePipeline(config.image_config)
         self.audio_pipeline = AudioPipeline(config.audio_config)
 
-    def load(self, input_path: Union[str, Path]) -> VideoT:
-        """Load video from file"""
-        try:
-            import cv2  # type: ignore[import-not-found]
+    def load(self, input_paths: Sequence[Union[str, Path]]) -> List[VideoT]:
+        """
+        Load video data from a list of file paths.
 
-            cap = cv2.VideoCapture(str(input_path))
-            frames: List[ImageT] = []
-            while len(frames) < self.config.max_frames:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                frames.append(frame)
-            cap.release()
+        Args:
+            input_paths (List[Union[str, Path]]): List of paths to the input video files.
 
-            # Load audio using AudioPipeline
-            audio_data: AudioT = self.audio_pipeline.load(input_path)
+        Returns:
+            List[VideoT]: Loaded video data.
+        """
+        videos = []
+        for input_path in input_paths:
+            try:
+                import cv2  # type: ignore[import-not-found]
 
-            return VideoT(frames=frames, audio=audio_data)
-        except ImportError:
-            raise ImportError("OpenCV is required for video processing")
+                cap = cv2.VideoCapture(str(input_path))
+                frames: List[ImageT] = []
+                while len(frames) < self.config.max_frames:
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
+                    frames.append(frame)
+                cap.release()
+
+                # Load audio using AudioPipeline
+                audio_data: AudioT = self.audio_pipeline.load([input_path])[0]
+
+                videos.append(
+                    VideoT(frames=frames, audio=audio_data, fps=self.config.fps)
+                )
+            except ImportError:
+                raise ImportError("OpenCV is required for video processing")
+        return videos
 
     def validate(self, data: Any) -> bool:
         return isinstance(data, VideoT)
@@ -67,4 +80,6 @@ class VideoPipeline(BasePipeline):
         if video_data.audio is not None:
             processed_audio = self.audio_pipeline.process(video_data.audio)
 
-        return VideoT(frames=[processed_frames], audio=processed_audio)
+        return VideoT(
+            frames=[processed_frames], audio=processed_audio, fps=self.config.fps
+        )

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
 from langchain.text_splitter import (
     RecursiveCharacterTextSplitter,  # type: ignore[import-untyped,import-not-found]
@@ -30,10 +30,13 @@ class TextPipeline(BasePipeline):
         self.config: TextConfig = config
         self._tokenizer = config.tokenizer
 
-    def load(self, input_path: Union[TextT, Path]) -> TextT:
-        """Load text from file"""
-        with open(input_path, "r", encoding="utf-8") as f:
-            return f.read()
+    def load(self, input_paths: Sequence[Union[str, Path]]) -> List[TextT]:
+        """Load text from a list of files"""
+        texts = []
+        for input_path in input_paths:
+            with open(input_path, "r", encoding="utf-8") as f:
+                texts.append(f.read())
+        return texts
 
     def validate(self, data: Any) -> bool:
         return isinstance(data, TextT)

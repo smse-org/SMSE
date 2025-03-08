@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, List, Sequence, Union
 
 import torch
 import torchaudio  # type: ignore[import-untyped,import-not-found]
@@ -22,35 +22,31 @@ class AudioPipeline(BasePipeline):
         super().__init__(config)
         self.config: AudioConfig = config
 
-    def load(self, input_path: Union[str, Path]) -> AudioT:
+    def load(self, input_paths: Sequence[Union[str, Path]]) -> List[AudioT]:
         """
-        Load audio data. If `input_path` is a directory, load all audio
-        files in the directory.
+        Load audio data from a list of file paths.
+
+        Args:
+            input_paths (List[Union[str, Path]]): List of paths to the input audio files.
+
+        Returns:
+            AudioT: Loaded audio data.
         """
-        input_path = Path(input_path)
-
-        if input_path.is_dir():
-            # Load all audio files in the directory
-            audio_files = list(
-                input_path.glob("*.wav")
-            )  # Adjust glob pattern for required extensions
-            audio_list = []
-            for file in audio_files:
-                waveform, sr = torchaudio.load(str(file))
-
-                if sr != self.config.sampling_rate:
-                    raise ValueError(
-                        f"Sample rate of {file} is {sr}, "
-                        "but expected {self.config.sampling_rate}"
-                    )
-
-                audio_list.append(waveform)
-        else:
-            # Load a single audio file
+        audio_list = []
+        for input_path in input_paths:
             waveform, sr = torchaudio.load(str(input_path))
-            audio_list = [waveform]
 
-        return AudioT(audio=audio_list, sampling_rate=self.config.sampling_rate)
+            if sr != self.config.sampling_rate:
+                raise ValueError(
+                    f"Sample rate of {input_path} is {sr}, "
+                    "but expected {self.config.sampling_rate}"
+                )
+
+            audio_list.append(
+                AudioT(audio=waveform, sampling_rate=self.config.sampling_rate)
+            )
+
+        return audio_list
 
     def validate(self, data: Any) -> bool:
         return isinstance(data, AudioT)

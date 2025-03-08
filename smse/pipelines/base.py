@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, List, Sequence, Union
 
 
 @dataclass
@@ -17,7 +17,7 @@ class BasePipeline(ABC):
         self.config = config
 
     @abstractmethod
-    def load(self, input_data: Union[str, Path, Any]) -> Any:
+    def load(self, input_data: Sequence[Union[str, Path, Any]]) -> List[Any]:
         """Load data from file or variable"""
         pass
 
@@ -26,9 +26,10 @@ class BasePipeline(ABC):
         """Preprocess loaded data"""
         pass
 
-    def __call__(self, input_data: Union[Path, Any]) -> Any:
+    def __call__(self, input_data: Sequence[Union[str, Path, Any]]) -> Any:
         """Main pipeline execution"""
-        if isinstance(input_data, Path):
+        data: Any
+        if all(isinstance(item, (str, Path)) for item in input_data):
             data = self.load(input_data)
         else:
             data = input_data

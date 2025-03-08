@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Sequence, Union
 
 import numpy as np
 import torch
@@ -99,22 +99,26 @@ class ImagePipeline(BasePipeline):
             raise ValueError(f"Unsupported target color mode: {self.config.color_mode}")
         return image
 
-    def load(self, input_path: Union[str, Path]) -> ImageT:
+    def load(self, input_paths: Sequence[Union[str, Path]]) -> List[ImageT]:
         """
-        Load an image from a file and return it as a PIL Image.
+        Load images from a list of file paths and return them as a list of PIL Images.
 
         Args:
-            input_path (Union[str, Path]): Path to the input image.
+            input_paths (List[Union[str, Path]]): List of paths to the input images.
 
         Returns:
-            Image.Image: Loaded image as a PIL Image.
+            List[Image.Image]: List of loaded images as PIL Images.
         """
-        try:
-            tensor_image = read_image(str(input_path))  # Returns a tensor in [C, H, W]
-
-            return transform_image(tensor_image, Image.Image)
-        except Exception as e:
-            raise ValueError(f"Failed to load image: {input_path}. Error: {e}")
+        images = []
+        for input_path in input_paths:
+            try:
+                tensor_image = read_image(
+                    str(input_path)
+                )  # Returns a tensor in [C, H, W]
+                images.append(transform_image(tensor_image, Image.Image))
+            except Exception as e:
+                raise ValueError(f"Failed to load image: {input_path}. Error: {e}")
+        return images
 
     def process(self, images: List[ImageT]) -> torch.Tensor:
         """
