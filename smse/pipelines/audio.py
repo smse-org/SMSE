@@ -48,9 +48,6 @@ class AudioPipeline(BasePipeline):
 
         return audio_list
 
-    def validate(self, data: Any) -> bool:
-        return isinstance(data, AudioT)
-
     def process(self, audio_data: AudioT) -> AudioT:
         """
         Process a batch of audio files.
@@ -61,33 +58,34 @@ class AudioPipeline(BasePipeline):
         )
 
         target_length = int(self.config.max_duration * self.config.sampling_rate)
+        channels = audio_data.data
+
+        # Add a channel dimension if the audio is mono (1D waveform)
+        if channels.dim() == 1:
+            channels = channels.unsqueeze(0)
+
+        # Convert to mono if specified
+        if self.config.mono and channels.shape[0] > 1:
+            channels = channels.mean(dim=0, keepdim=True)
 
         processed_audio = []
-        for waveform in audio_data.audio:
-            # Add a channel dimension if the audio is mono (1D waveform)
-            if waveform.dim() == 1:
-                waveform = waveform.unsqueeze(0)
-
+        for channel in channels:
             # Resample if needed
             if audio_data.sampling_rate != self.config.sampling_rate:
-                waveform = resampler(waveform)
-
-            # Convert to mono if specified
-            if self.config.mono and waveform.shape[0] > 1:
-                waveform = waveform.mean(dim=0, keepdim=True)
+                channel = resampler(channel)
 
             # Normalize the waveform if specified
             if self.config.normalize_audio:
-                waveform = waveform / waveform.abs().max()
+                channel = channel / channel.abs().max()
 
             # Add padding or truncate to fixed length
-            num_channels, waveform_length = waveform.shape
+            waveform_length = channel.shape
             if waveform_length > target_length:
-                waveform = waveform[:, :target_length]
+                channel = channel[:target_length]
             elif waveform_length < target_length:
-                padding = torch.zeros((num_channels, target_length - waveform_length))
-                waveform = torch.cat([waveform, padding], dim=1)
+                padding = torch.zeros((target_length - waveform_length))
+                channel = torch.cat([channel, padding], dim=1)
 
-            processed_audio.append(waveform)
+            processed_audio.append(channel)
 
         return AudioT(audio=processed_audio, sampling_rate=self.config.sampling_rate)
