@@ -1,7 +1,12 @@
 from smse.logging import get_logger
 from smse.models import ImageBindModel
 from smse.pipelines.image import ImageConfig, ImagePipeline
+from smse.pipelines.text import TextConfig, TextPipeline
 from smse.types import Modality
+from imagebind.models.multimodal_preprocessors import SimpleTokenizer  # type: ignore[import]
+from imagebind.data import return_bpe_path
+from pathlib import Path
+
 
 logger = get_logger(__name__)
 
@@ -13,15 +18,15 @@ def imagebind_embedding_example() -> None:
 
     # Inputs for different modalities
     image_paths = [
-        ".assets/images/bird_image.jpg",
-        ".assets/images/car_image.jpg",
-        ".assets/images/dog_image.jpg",
+        Path(".assets/images/bird_image.jpg"),
+        Path(".assets/images/car_image.jpg"),
+        Path(".assets/images/dog_image.jpg"),
     ]
 
     audio_paths = [
-        ".assets/audio/bird_audio.wav",
-        ".assets/audio/car_audio.wav",
-        ".assets/audio/dog_audio.wav",
+        Path(".assets/audio/bird_audio.wav"),
+        Path(".assets/audio/car_audio.wav"),
+        Path(".assets/audio/dog_audio.wav"),
     ]
 
     sentences = [
@@ -30,6 +35,7 @@ def imagebind_embedding_example() -> None:
         "a dog",
     ]
 
+    # Load and process images
     image_pipeline = ImagePipeline(
         ImageConfig(
             target_size=(224, 224),
@@ -40,12 +46,22 @@ def imagebind_embedding_example() -> None:
         )
     )
 
-    # Load and process images
     processed_images = image_pipeline(image_paths)
+
+    # Load and process text
+    text_pipeline = TextPipeline(
+        TextConfig(
+            chunk_size=240,
+            chunk_overlap=10,
+            tokenizer=SimpleTokenizer(bpe_path=return_bpe_path()),
+        )
+    )
+
+    processed_text = text_pipeline.process(sentences)
 
     inputs = {
         Modality.IMAGE: processed_images,
-        Modality.TEXT: sentences,
+        Modality.TEXT: processed_text,
         Modality.AUDIO: audio_paths,
     }
 

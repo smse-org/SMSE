@@ -5,6 +5,8 @@ from typing import Any, List, Optional, Sequence, Union
 from langchain.text_splitter import (
     RecursiveCharacterTextSplitter,  # type: ignore[import-untyped,import-not-found]
 )
+from torch import Tensor
+import torch
 
 from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import TextT
@@ -14,14 +16,14 @@ from smse.types import TextT
 class TextConfig(BaseConfig):
     """Configuration class for text pipeline"""
 
-    chunk_overlap: int = 0
-    """Number of overlapping tokens between chunks"""
-
-    tokenizer: Optional[Any] = None
-    """Tokenizer object to use for tokenization"""
-
     chunk_size: int = 512
     """Maximum sequence length for tokenization"""
+
+    chunk_overlap: int = 0
+    """Number of overlapping characters between chunks"""
+
+    tokenizer: Optional[Any] = None
+    """Callable Tokenizer object to use for tokenization"""
 
 
 class TextPipeline(BasePipeline):
@@ -38,9 +40,6 @@ class TextPipeline(BasePipeline):
                 texts.append(f.read())
         return texts
 
-    def validate(self, data: Any) -> bool:
-        return isinstance(data, TextT)
-
     def _split_into_chunks(self, text: TextT) -> List[TextT]:
         """Split text into chunks based on chunk_size"""
         if not self.config.chunk_size:
@@ -55,10 +54,30 @@ class TextPipeline(BasePipeline):
 
         return chunks
 
-    def process(self, text: TextT) -> Union[List[TextT], List[List[int]]]:
-        """Preprocess text data"""
-        chunks = self._split_into_chunks(text)
+    def process(self, texts: List[TextT]) -> List[List[TextT]] | Tensor:
+        """
+        Process a batch of texts.
+
+        Args:
+            texts (List[TextT]): List of text data.
+
+        Returns:
+            List[List[TextT]] | Tensor: Processed text data. If tokenizer is
+                provided, returns tokenized text data. [n, chunks, text/tokens]
+        """
+        processed_texts = []
+
+        for text in texts:
+            chunks = self._split_into_chunks(text)
+
+            if self._tokenizer:
+                processed_texts.append(
+                    torch.stack([self._tokenizer(chunk) for chunk in chunks])
+                )
+            else:
+                processed_texts.append(chunks)
 
         if self._tokenizer:
-            return [self._tokenizer(chunk) for chunk in chunks]
-        return chunks
+            return torch.concat(processed_texts).to(self.config.device)
+        else:
+            return processed_texts

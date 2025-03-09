@@ -69,9 +69,7 @@ class ImageBindModel(BaseModel):
             imagebind_mod = self.modality_mapping[mod]
 
             if mod == Modality.TEXT:
-                imagebind_inputs[imagebind_mod] = data.load_and_transform_text(
-                    mod_inputs, self.device
-                )
+                imagebind_inputs[imagebind_mod] = mod_inputs
             elif mod == Modality.IMAGE:
                 imagebind_inputs[imagebind_mod] = mod_inputs
             elif mod == Modality.AUDIO:
