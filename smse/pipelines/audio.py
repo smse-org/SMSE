@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List, Sequence, Union
+from typing import Any, List
 
 import torch
 import torchaudio  # type: ignore[import-untyped,import-not-found]

@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Optional
 
+import torch
 from langchain.text_splitter import (
     RecursiveCharacterTextSplitter,  # type: ignore[import-untyped,import-not-found]
 )
 from torch import Tensor
-import torch
 
 from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import TextT
@@ -65,7 +65,7 @@ class TextPipeline(BasePipeline):
             List[List[TextT]] | Tensor: Processed text data. If tokenizer is
                 provided, returns tokenized text data. [n, chunks, text/tokens]
         """
-        processed_texts = []
+        processed_texts: List[Any] = []
 
         for text in texts:
             chunks = self._split_into_chunks(text)

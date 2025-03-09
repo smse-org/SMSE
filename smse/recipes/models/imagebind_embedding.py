@@ -1,12 +1,15 @@
+from pathlib import Path
+
+from imagebind.data import return_bpe_path  # type: ignore[import]
+from imagebind.models.multimodal_preprocessors import (  # type: ignore[import]
+    SimpleTokenizer,
+)
+
 from smse.logging import get_logger
 from smse.models import ImageBindModel
 from smse.pipelines.image import ImageConfig, ImagePipeline
 from smse.pipelines.text import TextConfig, TextPipeline
 from smse.types import Modality
-from imagebind.models.multimodal_preprocessors import SimpleTokenizer  # type: ignore[import]
-from imagebind.data import return_bpe_path
-from pathlib import Path
-
 
 logger = get_logger(__name__)
 
