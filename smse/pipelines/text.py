@@ -30,7 +30,7 @@ class TextPipeline(BasePipeline):
         self.config: TextConfig = config
         self._tokenizer = config.tokenizer
 
-    def load(self, input_paths: Sequence[Union[str, Path]]) -> List[TextT]:
+    def load(self, input_paths: List[Path]) -> List[TextT]:
         """Load text from a list of files"""
         texts = []
         for input_path in input_paths:

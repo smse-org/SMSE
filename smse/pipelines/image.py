@@ -99,12 +99,12 @@ class ImagePipeline(BasePipeline):
             raise ValueError(f"Unsupported target color mode: {self.config.color_mode}")
         return image
 
-    def load(self, input_paths: Sequence[Union[str, Path]]) -> List[ImageT]:
+    def load(self, input_paths: List[Path]) -> List[ImageT]:
         """
         Load images from a list of file paths and return them as a list of PIL Images.
 
         Args:
-            input_paths (List[Union[str, Path]]): List of paths to the input images.
+            input_paths (List[Path]): List of paths to the input images.
 
         Returns:
             List[Image.Image]: List of loaded images as PIL Images.

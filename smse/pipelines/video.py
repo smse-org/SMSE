@@ -26,12 +26,12 @@ class VideoPipeline(BasePipeline):
         self.image_pipeline = ImagePipeline(config.image_config)
         self.audio_pipeline = AudioPipeline(config.audio_config)
 
-    def load(self, input_paths: Sequence[Union[str, Path]]) -> List[VideoT]:
+    def load(self, input_paths: List[Path]) -> List[VideoT]:
         """
         Load video data from a list of file paths.
 
         Args:
-            input_paths (List[Union[str, Path]]): List of paths to the input video files.
+            input_paths (List[Path]): List of paths to the input video files.
 
         Returns:
             List[VideoT]: Loaded video data.

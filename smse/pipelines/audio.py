@@ -22,12 +22,12 @@ class AudioPipeline(BasePipeline):
         super().__init__(config)
         self.config: AudioConfig = config
 
-    def load(self, input_paths: Sequence[Union[str, Path]]) -> List[AudioT]:
+    def load(self, input_paths: List[Path]) -> List[AudioT]:
         """
         Load audio data from a list of file paths.
 
         Args:
-            input_paths (List[Union[str, Path]]): List of paths to the input audio files.
+            input_paths (List[Path]): List of paths to the input audio files.
 
         Returns:
             AudioT: Loaded audio data.

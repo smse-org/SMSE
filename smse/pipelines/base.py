@@ -17,7 +17,7 @@ class BasePipeline(ABC):
         self.config = config
 
     @abstractmethod
-    def load(self, input_data: Sequence[Union[str, Path, Any]]) -> List[Any]:
+    def load(self, input_data: List[Path]) -> List[Any]:
         """Load data from file or variable"""
         pass
 
@@ -26,10 +26,10 @@ class BasePipeline(ABC):
         """Preprocess loaded data"""
         pass
 
-    def __call__(self, input_data: Sequence[Union[str, Path, Any]]) -> Any:
+    def __call__(self, input_data: Union[List[Path], List[Any]]) -> Any:
         """Main pipeline execution"""
         data: Any
-        if all(isinstance(item, (str, Path)) for item in input_data):
+        if all(isinstance(item, Path) for item in input_data):
             data = self.load(input_data)
         else:
             data = input_data
