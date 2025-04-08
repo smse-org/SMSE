@@ -965,7 +965,7 @@ types-regex = "*"
 type = "git"
 url = "https://github.com/Ahmedsaed/ImageBind.git"
 reference = "HEAD"
-resolved_reference = "44ea001f5296006958bb3a36f9575200961f19e2"
+resolved_reference = "274d2c04b3093efc09324a648a638fed58e10f51"
 
 [[package]]
 name = "iniconfig"
