@@ -1,10 +1,11 @@
+import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, cast
 
 import torch
 import torchaudio  # type: ignore[import-untyped,import-not-found]
-import logging
+from pytorchvideo.data.clip_sampling import ClipSampler  # type: ignore[import]
 
 from smse.pipelines.base import BaseConfig, BasePipeline
 from smse.types import AudioT
@@ -29,7 +30,9 @@ class AudioConfig(BaseConfig):
     apply_melspec: bool = False  # Whether to convert to mel spectrogram
 
 
-def waveform2melspec(waveform, sample_rate, num_mel_bins, target_length):
+def waveform2melspec(
+    waveform: torch.Tensor, sample_rate: int, num_mel_bins: int, target_length: int
+) -> torch.Tensor:
     """
     Convert a waveform to a mel-spectrogram.
 
@@ -75,11 +78,13 @@ def waveform2melspec(waveform, sample_rate, num_mel_bins, target_length):
         fbank = fbank[:, 0:target_length]
     # Convert to [1, mel_bins, num_frames] shape, essentially like a 1
     # channel image
-    fbank = fbank.unsqueeze(0)
-    return fbank
+    result: torch.Tensor = fbank.unsqueeze(0)
+    return result
 
 
-def get_clip_timepoints(clip_sampler, duration):
+def get_clip_timepoints(
+    clip_sampler: ClipSampler, duration: float
+) -> List[tuple[float, float]]:
     """
     Get the timepoints for clips from an audio file.
 
@@ -153,7 +158,11 @@ class AudioPipeline(BasePipeline):
         return isinstance(data, AudioT)
 
     def _process_batch(
-        self, audio_data_list: List[AudioT], transform_fn: Optional[Callable] = None
+        self,
+        audio_data_list: List[AudioT],
+        transform_fn: Optional[
+            Callable[[torch.Tensor, int, AudioConfig], torch.Tensor]
+        ] = None,
     ) -> torch.Tensor:
         """
         Process a list of audio files with optional transform function and return a tensor.
@@ -200,7 +209,11 @@ class AudioPipeline(BasePipeline):
             )
 
     def _process_simple(
-        self, audio_data: AudioT, transform_fn: Optional[Callable]
+        self,
+        audio_data: AudioT,
+        transform_fn: Optional[
+            Callable[[torch.Tensor, int, AudioConfig], torch.Tensor]
+        ] = None,
     ) -> AudioT:
         """
         Process audio without clip sampling (original pipeline behavior).
@@ -262,7 +275,7 @@ class AudioPipeline(BasePipeline):
 
                 # For consistency with the clips version, normalize if configured
                 if not self.config.normalize_audio:
-                    from torchvision.transforms import Normalize
+                    from torchvision.transforms import Normalize  # type: ignore[import]
 
                     normalize = Normalize(mean=self.config.mean, std=self.config.std)
                     waveform = normalize(waveform)
@@ -278,7 +291,9 @@ class AudioPipeline(BasePipeline):
     def __call__(
         self,
         input_data: Union[List[Path], List[AudioT]],
-        transform_fn: Optional[Callable] = None,
+        transform_fn: Optional[
+            Callable[[torch.Tensor, int, AudioConfig], torch.Tensor]
+        ] = None,
     ) -> torch.Tensor:
         """
         Process audio data directly from paths or AudioT objects.
@@ -290,17 +305,23 @@ class AudioPipeline(BasePipeline):
         Returns:
             torch.Tensor: Processed audio tensor
         """
-        data: List[AudioT]
+        # Use type casting to help mypy understand the types
         if all(isinstance(item, Path) for item in input_data):
-            data = self.load(input_data)
+            # Cast to List[Path] for mypy
+            path_list = cast(List[Path], input_data)
+            data = self.load(path_list)
         else:
-            data = input_data
+            # Cast to List[AudioT] for mypy
+            data = cast(List[AudioT], input_data)
 
         return self.process(data, transform_fn)
 
-    # Override the parent method to ensure compatibility with the base class
     def process(
-        self, data: Any, transform_fn: Optional[Callable] = None
+        self,
+        data: Any,
+        transform_fn: Optional[
+            Callable[[torch.Tensor, int, AudioConfig], torch.Tensor]
+        ] = None,
     ) -> torch.Tensor:
         """
         Process audio data and return a tensor.
@@ -321,7 +342,11 @@ class AudioPipeline(BasePipeline):
             raise ValueError(f"Expected AudioT or List[AudioT], got {type(data)}")
 
     def _process_with_clips(
-        self, audio_data: AudioT, transform_fn: Optional[Callable]
+        self,
+        audio_data: AudioT,
+        transform_fn: Optional[
+            Callable[[torch.Tensor, int, AudioConfig], torch.Tensor]
+        ] = None,
     ) -> AudioT:
         """
         Process audio with clip sampling.

@@ -5,13 +5,13 @@ from imagebind.models.multimodal_preprocessors import (  # type: ignore[import]
     SimpleTokenizer,
 )
 
+from smse.device import get_device
 from smse.logging import get_logger
 from smse.models import ImageBindModel
+from smse.pipelines.audio import AudioConfig, AudioPipeline
 from smse.pipelines.image import ImageConfig, ImagePipeline
 from smse.pipelines.text import TextConfig, TextPipeline
-from smse.pipelines.audio import AudioConfig, AudioPipeline
 from smse.types import Modality
-from smse.device import get_device
 
 logger = get_logger(__name__)
 

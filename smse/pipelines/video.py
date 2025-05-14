@@ -81,5 +81,9 @@ class VideoPipeline(BasePipeline):
             processed_audio = self.audio_pipeline.process(video_data.audio)
 
         return VideoT(
-            frames=[processed_frames], audio=processed_audio, fps=self.config.fps
+            frames=[processed_frames],
+            audio=AudioT(
+                [processed_audio], sampling_rate=self.config.audio_config.sampling_rate
+            ),
+            fps=self.config.fps,
         )

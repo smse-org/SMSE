@@ -15,7 +15,9 @@ logger = get_logger(__name__)
 class ImageBindModel(BaseModel):
     """Wrapper for ImageBind models."""
 
-    def __init__(self, pretrained: bool = True, device: Optional[str] = None):
+    def __init__(
+        self, pretrained: bool = True, device: Optional[str | torch.device] = None
+    ):
         """
         Initialize an ImageBind model.
 

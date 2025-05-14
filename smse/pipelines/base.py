@@ -3,13 +3,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Union
 
+import torch
+
 
 @dataclass
 class BaseConfig:
     """Base configuration for all pipelines"""
 
     batch_size: int = 32
-    device: str = "cpu"
+    device: str | torch.device = "cpu"
 
 
 class BasePipeline(ABC):
