@@ -19,6 +19,7 @@ sentence-transformers = { version = "^2.2.2", optional = true }
 imagebind = { git = "https://github.com/Ahmedsaed/ImageBind.git", optional = true }
 python-dotenv = "^1.0.1"
 langchain = "^0.3.13"
+soundfile = {version = "^0.13.1", optional = true}
 
 [tool.poetry.group.dev]
 optional = true
@@ -33,10 +34,10 @@ pytest = "^8.3.3"
 
 [tool.poetry.extras]
 vision = ["torchvision"]
-audio = ["torchaudio"]
+audio = ["torchaudio", "soundfile"]
 sentence-transformers = ["sentence-transformers", "timm"]
 imagebind = ["imagebind"]
-all = ["torchvision", "torchaudio", "sentence-transformers", "imagebind"]
+all = ["torchvision", "torchaudio", "soundfile", "sentence-transformers", "imagebind"]
 
 [build-system]
 requires = ["poetry-core"]
