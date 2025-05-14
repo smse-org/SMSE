@@ -12,33 +12,32 @@ smse = "smse.cli:main"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 numpy = "^1.26.4"
-types-pillow = "^10.2.0.20240822"
 torch = "^2.5.1"
+torchaudio = {version = "^2.5.1", optional = true}
+torchvision = {version = "^0.20.1", optional = true}
+sentence-transformers = { version = "^2.2.2", optional = true }
+imagebind = { git = "https://github.com/Ahmedsaed/ImageBind.git", optional = true }
+python-dotenv = "^1.0.1"
 langchain = "^0.3.13"
+soundfile = {version = "^0.13.1", optional = true}
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
+types-pillow = "^10.2.0.20240822"
 mypy = "^1.13.0"
 black = "^24.10.0"
 isort = "^5.13.2"
 flake8 = "7.0.0"
 pytest = "^8.3.3"
 
-[tool.poetry.group.audio]
-optional = true
-
-[tool.poetry.group.vision]
-optional = true
-
-[tool.poetry.group.audio.dependencies]
-torchaudio = "^2.5.1"
-torch = "^2.5.1"
-
-[tool.poetry.group.vision.dependencies]
-torchvision = "^0.20.1"
-torch = "^2.5.1"
+[tool.poetry.extras]
+vision = ["torchvision"]
+audio = ["torchaudio", "soundfile"]
+sentence-transformers = ["sentence-transformers", "timm"]
+imagebind = ["imagebind"]
+all = ["torchvision", "torchaudio", "soundfile", "sentence-transformers", "imagebind"]
 
 [build-system]
 requires = ["poetry-core"]

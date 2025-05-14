@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, List, Union
+
+import torch
 
 
 @dataclass
@@ -9,7 +11,7 @@ class BaseConfig:
     """Base configuration for all pipelines"""
 
     batch_size: int = 32
-    device: str = "cpu"
+    device: str | torch.device = "cpu"
 
 
 class BasePipeline(ABC):
@@ -17,7 +19,7 @@ class BasePipeline(ABC):
         self.config = config
 
     @abstractmethod
-    def load(self, input_data: Union[str, Path, Any]) -> Any:
+    def load(self, input_data: List[Path]) -> List[Any]:
         """Load data from file or variable"""
         pass
 
@@ -26,19 +28,12 @@ class BasePipeline(ABC):
         """Preprocess loaded data"""
         pass
 
-    @abstractmethod
-    def validate(self, data: Any) -> bool:
-        """Validate data format and content"""
-        pass
-
-    def __call__(self, input_data: Union[Path, Any]) -> Any:
+    def __call__(self, input_data: Union[List[Path], List[Any]]) -> Any:
         """Main pipeline execution"""
-        if isinstance(input_data, Path):
+        data: Any
+        if all(isinstance(item, Path) for item in input_data):
             data = self.load(input_data)
         else:
             data = input_data
-
-        if not self.validate(data):
-            raise ValueError(f"Invalid data format for {self.__class__.__name__}")
 
         return self.process(data)
