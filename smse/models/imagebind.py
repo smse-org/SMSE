@@ -4,6 +4,7 @@ import torch
 from numpy import ndarray
 from torch import Tensor
 
+from smse.device import get_device
 from smse.logging import get_logger
 from smse.models.base import BaseModel
 from smse.types import EmbeddingT, Modality
@@ -27,13 +28,10 @@ class ImageBindModel(BaseModel):
             ModalityType,
         )
 
-        self.device = (
-            device
-            if device is not None
-            else "cuda" if torch.cuda.is_available() else "cpu"
-        )
+        self.device = device if device is not None else get_device()
         self.model = imagebind_model.imagebind_huge(pretrained=pretrained)
-        self.model.to(self.device)
+        self.model = self.model.to(self.device)
+        self.model.eval()
 
         # Mapping from SMSE modalities to ImageBind modalities
         self.modality_mapping = {
@@ -55,8 +53,6 @@ class ImageBindModel(BaseModel):
         Returns:
             Dict[Modality, Tensor] or Tensor: Dictionary of embeddings for each modality or tensor for specific modality
         """
-        from imagebind import data  # type: ignore[import]
-
         # Convert inputs to ImageBind format
         imagebind_inputs = {}
 
@@ -73,9 +69,7 @@ class ImageBindModel(BaseModel):
             elif mod == Modality.IMAGE:
                 imagebind_inputs[imagebind_mod] = mod_inputs
             elif mod == Modality.AUDIO:
-                imagebind_inputs[imagebind_mod] = data.load_and_transform_audio_data(
-                    mod_inputs, self.device
-                )
+                imagebind_inputs[imagebind_mod] = mod_inputs
 
         # Generate embeddings
         with torch.no_grad():
@@ -90,7 +84,9 @@ class ImageBindModel(BaseModel):
         return embeddings
 
     def cross_modal_similarity(
-        self, embeddings1: EmbeddingT, embeddings2: Optional[EmbeddingT] = None
+        self,
+        embeddings1: EmbeddingT,
+        embeddings2: Optional[EmbeddingT] = None,
     ) -> Tensor:
         """
         Calculate cross-modal similarity between embeddings from different modalities.
