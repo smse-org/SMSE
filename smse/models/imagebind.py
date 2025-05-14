@@ -65,13 +65,7 @@ class ImageBindModel(BaseModel):
                 )
 
             imagebind_mod = self.modality_mapping[mod]
-
-            if mod == Modality.TEXT:
-                imagebind_inputs[imagebind_mod] = mod_inputs
-            elif mod == Modality.IMAGE:
-                imagebind_inputs[imagebind_mod] = mod_inputs
-            elif mod == Modality.AUDIO:
-                imagebind_inputs[imagebind_mod] = mod_inputs
+            imagebind_inputs[imagebind_mod] = mod_inputs
 
         # Generate embeddings
         with torch.no_grad():
