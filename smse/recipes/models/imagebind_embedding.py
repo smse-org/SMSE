@@ -109,12 +109,27 @@ def imagebind_embedding_example() -> None:
     )
     logger.info(f"Image-Text similarity:\n {img_text_sim}")
 
+    text_img_sim = model.cross_modal_similarity(
+        embeddings[Modality.TEXT], embeddings[Modality.IMAGE]
+    )
+    logger.info(f"Text-Image similarity:\n {text_img_sim}")
+
     img_audio_sim = model.cross_modal_similarity(
         embeddings[Modality.IMAGE], embeddings[Modality.AUDIO]
     )
     logger.info(f"Image-Audio similarity:\n {img_audio_sim}")
 
+    audio_img_sim = model.cross_modal_similarity(
+        embeddings[Modality.AUDIO], embeddings[Modality.IMAGE]
+    )
+    logger.info(f"Audio-Image similarity:\n {audio_img_sim}")
+
     audio_text_sim = model.cross_modal_similarity(
         embeddings[Modality.AUDIO], embeddings[Modality.TEXT]
     )
     logger.info(f"Audio-Text similarity:\n {audio_text_sim}")
+
+    text_audio_sim = model.cross_modal_similarity(
+        embeddings[Modality.TEXT], embeddings[Modality.AUDIO]
+    )
+    logger.info(f"Text-Audio similarity:\n {text_audio_sim}")
