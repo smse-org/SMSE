@@ -33,6 +33,10 @@ class ImageBindModel(BaseModel):
         self.device = device if device is not None else get_device()
         self.model = imagebind_model.imagebind_huge(pretrained=pretrained)
         self.model = self.model.to(self.device)
+
+        for modality_key in self.model.modality_postprocessors.keys():
+            self.model.modality_postprocessors[modality_key] = torch.nn.Identity()
+
         self.model.eval()
 
         # Mapping from SMSE modalities to ImageBind modalities
